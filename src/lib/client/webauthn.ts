@@ -1,0 +1,15 @@
+import { decodeBase64 } from "@oslojs/encoding";
+import { ObjectParser } from "@pilcrowjs/object-parser";
+
+// export async function createChallenge(): Promise<Uint8Array> {
+export async function createChallenge(): Promise<BufferSource> {
+	const response = await fetch("/auth/api/webauthn/challenge", {
+		method: "POST"
+	});
+	if (!response.ok) {
+		throw new Error("Failed to create challenge");
+	}
+	const result = await response.json();
+	const parser = new ObjectParser(result);
+	return decodeBase64(parser.getString("challenge")) as BufferSource;
+}
