@@ -2,8 +2,10 @@ import type { Collection } from "@mysql/xdevapi";
 import { MySQLXAccessor, type ConnectionConfig, type MySqlDoc } from "./MySQLXAccessor";
 import { env, loadEnvFile } from 'node:process';
 import { type List } from '$lib/schema';
+import { projectlib } from "$lib/constants";
 
-loadEnvFile("/home/pcs/sw/tdapp/webauthn/src/lib/server/.env");
+loadEnvFile(`${projectlib}/server/.env`);
+
 
 
 interface AppDb {

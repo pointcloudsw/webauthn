@@ -32,29 +32,23 @@ const rateLimitHandle: Handle = async ({ event, resolve }) => {
 
 const authHandle: Handle = async ({ event, resolve }) => {
 
+	// Get session cookie from request
 	const token = event.cookies.get("session");
 	
-		// logger(`TOKEN: ${token}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, CLIENT ADDRESS: ${event?.getClientAddress()}`);
-		logger(`TOKEN: ${token}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
+	logger(`TOKEN: ${token}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
 
-
-		// if ( event.url.pathname === '/' ){
-		// 	return await resolve(event);
-		// }
-	// if (token === null) {
-	// 	event.locals.user = null;
-	// 	event.locals.session = null;
-	// 	return resolve(event);
-	// }
+	// Validate session state
 	const { session, user } = token ? validateSessionToken(token) : { session: null, user: null };
 
 	logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
 
+	// If session is valid, refresh cookie
 	if ( (token && session && user) ) {
 
 		setSessionTokenCookie(event, token, session.expiresAt);
 
 		logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
+
 
 	} else {
 
@@ -73,32 +67,42 @@ const authHandle: Handle = async ({ event, resolve }) => {
 
 const redirectHandle: Handle = async ({ event, resolve }) => {
 
-	const token = event.cookies.get("session");
+	const { request, route, url } = event;
+	const { session, user } = event.locals;
 
-	const { session, user } = token ? validateSessionToken(token) : { session: null, user: null };
-
-	logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
-
-		if (event.url.pathname.startsWith('/auth/logout') ) {
-			// return redirect(307, '/');
-		event.url.pathname = '/';
-		} else if ( !token && event.url.pathname !== '/' ) {
-
-		logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
-
-		// return redirect(307, '/auth/login');
-		event.url.pathname = '/auth/login';
+	logger(`USERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}`);
 
 
-		logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
+	if ( !( session && user ) )
+		if ( ! ( url.pathname.startsWith('/auth/') || route.id?.startsWith('/auth/') || route.id === '/' ) ) {
+	
+			logger(`\n----- REDIRECTING to / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}`);
 
-			// return redirect(307, '/auth/login');
-			// return resolve(event, '/auth/login');
-			// return await resolve(event);
-		} else {
-			event.url.pathname = '/';
-		logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
+			return redirect(307, '/');
 		}
+	
+		logger(`\n----- RESOLVING EVENT REQUEST / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}`);
+
+		// if (event.url.pathname.startsWith('/auth/logout') ) {
+		// 	// return redirect(307, '/');
+		// event.url.pathname = '/';
+		// } else if ( !token && event.url.pathname !== '/' ) {
+
+		// logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
+
+		// // return redirect(307, '/auth/login');
+		// event.url.pathname = '/auth/login';
+
+
+		// logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
+
+		// 	// return redirect(307, '/auth/login');
+		// 	// return resolve(event, '/auth/login');
+		// 	// return await resolve(event);
+		// } else {
+		// 	event.url.pathname = '/';
+		// logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
+		// }
 
 
 

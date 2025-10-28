@@ -3,8 +3,12 @@
 
 	let { data } = $props();
 
-	let action =  data?.username && data?.userId ? 'Logout' : 'Login';
-	let wmsg = action === 'Logout' ? `Welcome aboard, ${data.username}!` : `Welcome, please login to continue`;
+	
+	logger(`\n----- / -----\nUSERNAME: ${data.user?.username}, SESSIONUSERID: ${data.session?.userId}`);
+
+
+	let action =  data.user?.username && data.session?.userId ? 'Logout' : 'Login';
+	let wmsg = action === 'Logout' ? `Welcome aboard, ${data.user?.username}!` : `Welcome, please login to continue`;
 </script>
 <!-- <header>
 	<a href="/">Home</a>
@@ -15,10 +19,11 @@
 
 <main>
 	<h1>{wmsg}</h1>
-	<!-- <form method="post" action={`/auth/${action.toLowerCase()}`}>
-		<button>{action}</button>
-	</form> -->
-	<a href={`/auth/${action.toLowerCase()}`} class="btn">{action}</a>
+	<!-- <a href={`/auth/${action.toLowerCase()}`} class="btn">{action}</a> -->
+	<form method="post" action={`/auth?/${action.toLowerCase()}`}>
+	<!-- <form method="post" action={action.toLowerCase()}> -->
+		<button class="btn">{action}</button>
+	</form>
 
 </main>
 
