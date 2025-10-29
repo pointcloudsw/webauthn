@@ -78,7 +78,7 @@ const redirectHandle: Handle = async ({ event, resolve }) => {
 	
 			logger(`\n----- REDIRECTING to / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}`);
 
-			return redirect(307, '/');
+			return await redirect(303, '/');
 		}
 	
 		logger(`\n----- RESOLVING EVENT REQUEST / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}`);

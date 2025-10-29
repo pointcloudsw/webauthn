@@ -11,8 +11,9 @@ import type { Actions, PageServerLoadEvent, RequestEvent } from "./$types";
 
 import {logger} from '$lib/exports';
 
+import { navMap, projectroot } from "$lib/constants";
 
-export function load(event: PageServerLoadEvent) {
+export async function load(event: PageServerLoadEvent) {
 		logger(`TOKEN: ${event.cookies?.get('session')}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
 
 	if ( event?.locals?.user || event?.locals?.session ){
@@ -22,6 +23,27 @@ export function load(event: PageServerLoadEvent) {
 		logger(`TOKEN: ${event.cookies?.get('session')}, SESSION: ${event.locals?.session}, USER: ${event.locals?.user}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
 	}
 
-	return redirect(307, '/');
+	logger(`LOGOUT is redirecting to home, USER: ${event.locals.user?.username}, SESSION: ${event.locals.session?.userId}, TOKEN: ${event.cookies.get('session')}, REFERER: ${event.request.referrer}, URL: ${event.request.url}, eURL: ${event.url}, ROUTEID: ${event.route.id}, LOCATIONHEADER: ${event.request.headers.get('location')}`);
+
+	return await redirect( 303, navMap.get('home')?.path ?? projectroot );
 	// return {};
 }
+
+export const actions: Actions = {
+	default: action
+};
+
+async function action(event: RequestEvent) {
+	logger(`LOGOUT is redirecting to home, USER: ${event.locals.user?.username}, SESSION: ${event.locals.session?.userId}, TOKEN: ${event.cookies.get('session')}, REFERER: ${event.request.referrer}, URL: ${event.request.url}, eURL: ${event.url}, ROUTEID: ${event.route.id}, LOCATIONHEADER: ${event.request.headers.get('location')}`);
+
+	if ( event?.locals?.user || event?.locals?.session ){
+		deleteSessionTokenCookie(event);
+		event.locals.user = null;
+		event.locals.session = null;
+	}
+
+	logger(`LOGOUT is redirecting to home, USER: ${event.locals.user?.username}, SESSION: ${event.locals.session?.userId}, TOKEN: ${event.cookies.get('session')}, REFERER: ${event.request.referrer}, URL: ${event.request.url}, eURL: ${event.url}, ROUTEID: ${event.route.id}, LOCATIONHEADER: ${event.request.headers.get('location')}`);
+
+	return await redirect( 303, navMap.get('home')?.path ?? projectroot );
+}
+

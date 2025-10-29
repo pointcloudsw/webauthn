@@ -8,6 +8,6 @@ import { Google } from "arctic";
 import { env, loadEnvFile } from "node:process";
 import { projectlib } from "$lib/constants";
 
-loadEnvFile(`${projectlib}/server/.env`);
+loadEnvFile(`.${projectlib}/server/.env`);
 
 export const google = new Google(env.GOOGLE_CLIENT_ID ?? '', env.GOOGLE_CLIENT_SECRET ?? '', "https://www1.pcpllc.us/auth/login/google/callback");

@@ -4,7 +4,7 @@ import { DynamicBuffer } from "@oslojs/binary";
 import { env, loadEnvFile } from "node:process";
 import { projectlib } from "$lib/constants";
 
-loadEnvFile(`${projectlib}/server/.env`);
+loadEnvFile(`.${projectlib}/server/.env`);
 
 const key = decodeBase64(env.ENCRYPTION_KEY || '');
 

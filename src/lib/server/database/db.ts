@@ -4,7 +4,7 @@ import { env, loadEnvFile } from 'node:process';
 import { type List } from '$lib/schema';
 import { projectlib } from "$lib/constants";
 
-loadEnvFile(`${projectlib}/server/.env`);
+loadEnvFile(`.${projectlib}/server/.env`);
 
 
 

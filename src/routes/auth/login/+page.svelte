@@ -6,25 +6,38 @@
 	
 
 	import type { ActionData, PageData } from "./$types";
-
+	
 	export let form: ActionData;
-
 	export let data: PageData;
+
+	// export let { auth, home, login, session, user } = data;
+	const { auth, home, login, session, user } = data;
+	console.log('DATA:');
+	console.log(data);
+	const signup = `${auth}/signup`;
+	const forgotpassword = `${auth}/forgot-password`;
 	
 	let passkeyErrorMessage = "";
 </script>
 
 <header>
 	<a href="/">Home</a>
-	<a href="/settings">Settings</a>
 	<a href="/todo">Todo</a>
+	<a href="/settings">Settings</a>
+	<a href="/settings">Settings</a>
+	{#if user?.username && session?.userId}
+	<a href="/auth/logout">Logout</a>
+	{/if}
+
+	<!-- <a href={navMap.get('settings')?.path}>{navMap.get('settings')?.name}</a> -->
 
 	<!-- <p>{user?.username ?? "Please login"}</p>
 	<a href="/auth/login">{user?.id ? "Logout" : "Login" }</a> -->
-	<p>{data.user?.username ?? "Please login"}</p>
 </header>
 
-<h1>Sign in</h1>
+<h1>{user?.username ?? "Please login"}</h1>
+
+<!-- <h1>Sign in</h1> -->
 <form method="post" use:enhance>
 	<label for="form-login.email">Email</label>
 	<input
@@ -59,7 +72,7 @@
 				throw new Error("Unexpected error");
 			}
 
-			const response = await fetch("/auth/login/passkey", {
+			const response = await fetch(`${login}/passkey`, {
 				method: "POST",
 				// this example uses JSON but you can use something like CBOR to get something more compact
 				body: JSON.stringify({
@@ -70,8 +83,8 @@
 				})
 			});
 
-			if (response.ok) {
-				goto("/");
+			if ( response.ok ) {
+				goto( home );
 			} else {
 				passkeyErrorMessage = await response.text();
 			}
@@ -79,5 +92,5 @@
 	>
 	<p>{passkeyErrorMessage}</p>
 </div>
-<a href="/auth/signup">Create an account</a>
-<a href="/auth/forgot-password">Forgot password?</a>
+<a href={signup}>Create an account</a>
+<a href={forgotpassword}>Forgot password?</a>
