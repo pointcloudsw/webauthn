@@ -8,6 +8,7 @@ import { addList, getListsByUser } from '$lib/server/database/db';
 import { getLocals } from '$lib/auth.remote';
 import { refreshAll } from '$app/navigation';
 import { logger } from '$lib/exports';
+import { InferencePriority } from 'typescript';
 
 
 
@@ -48,23 +49,27 @@ const createList = form(
 // const removeList = command( async ({}) => {});
 // const removeListItem = form( async ({}) => {});
 // const modifyListItem = form( async ({}) => {});
-/*
-const createListItem = form(	v.object({
-		// listid
-		// itemid
-		description: v.string(),
-		due: v.date(),
-		status: v.string()
 
+const createListItem = form(	v.object({
+		due: v.string(),
+		editable: v.boolean(),
+		flag: v.number(),
+		id: v.number(),
+		listid: v.number(),
+		owner: v.number(),
+		priority: v.number(),
+		sequence: v.number(),
+		status: v.number(),
+		text: v.string()
 	}),
-	async ({ title, items }) => {
+	async ({due, editable, flag, id, listid, owner, priority, sequence, status, text}) => {
 		let user;
 		if ( !( user = (await getUser()).id ) ){
 			throw new Error("user not found");
 			return [ 'user not found' ];
 		}
 
-		const result : string[] = await addList({owner: user, title, items});
+		const result : string[] = await addListItem({due, editable, flag, id, listid, owner, priority, sequence, status, text});
 
 		// if ( result ) refreshAll();
 

@@ -39,10 +39,6 @@ export async function dbConnect(): Promise<MySQLXAccessor> {
         throw new Error(`database connection failed: ${e}`);
     }
    
-    // console.log('Database connected');
-
-    // console.log(adb.db);
-    // console.log(adb.db.isConnected());
     return adb.db;
 }
 
@@ -70,7 +66,7 @@ export async function getListsByUser(user: string | number) : Promise<MySqlDoc[]
     return lists;
 }
 
-export async function addList(list: {owner: string | number, title: string, items: string[]}) : Promise<string[]> {
+export async function addList(list: {owner: string | number, title: string, items: Item[]}) : Promise<string[]> {
     let result : string[];
     let coll : Collection;
 
@@ -100,8 +96,21 @@ export async function editList(){
 export async function editListItem(){
     
 }
-export async function addListItem(){
+export async function addListItem(input){
+    if (!adb.db) {
+        throw new Error('Database not connected. Call dbConnect() first.');
+    }
+
+    coll = await adb.db.getCollection(adb.cfg.schema ?? '',adb.collection);
+    if (!coll)
+        throw new Error("DB collection found");
     
+    result = await adb.db.insertOne(
+        adb.cfg.schema ?? '',
+        adb.collection,
+        list
+    );
+    return result;    
 }
 export async function delListItem(){
     

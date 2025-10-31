@@ -56,10 +56,20 @@ let list : List;
 			</label>
 
 			<label>
-				<h2>Items</h2>
-				<input {...items[0].as('text')} />
+				<h2>Add item</h2>
+				<input
+					type="text"
+					autocomplete="off"
+					onkeydown={async (e) => {
+						if (e.key !== 'Enter') return;
+
+						const input = e.currentTarget;
+						const text = input.value;
+						const response = await 
+					}}
+				/>
 			</label>
-			<button onclick={async () => await rf.getLists().refresh()}>Create!</button>
+			<button onclick={async () => await rf.getLists().refresh()}>Save</button>
 		</form>
 		
 	{/if}
