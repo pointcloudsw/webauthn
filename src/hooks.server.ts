@@ -83,34 +83,11 @@ const redirectHandle: Handle = async ({ event, resolve }) => {
 	
 		logger(`\n----- RESOLVING EVENT REQUEST / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}`);
 
-		// if (event.url.pathname.startsWith('/auth/logout') ) {
-		// 	// return redirect(307, '/');
-		// event.url.pathname = '/';
-		// } else if ( !token && event.url.pathname !== '/' ) {
-
-		// logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
-
-		// // return redirect(307, '/auth/login');
-		// event.url.pathname = '/auth/login';
-
-
-		// logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
-
-		// 	// return redirect(307, '/auth/login');
-		// 	// return resolve(event, '/auth/login');
-		// 	// return await resolve(event);
-		// } else {
-		// 	event.url.pathname = '/';
-		// logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
-		// }
-
-
 
 	return await resolve(event);
 };
 
 export const init: ServerInit = async () => {
-	// loadEnvFile("/home/pcs/sw/tdapp/webauthn/src/lib/server/.env");
 	await dbConnect();
 };
 
