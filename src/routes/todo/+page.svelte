@@ -1,16 +1,24 @@
 <script lang="ts">
+// import { onMount, onDestroy } from 'svelte';
 import * as rf from './data.remote';
 // import { getLocals } from "$lib/auth.remote";
-import { type List } from "$lib/schema";
+// import { type Item, type List } from "$lib/schema";
 
 // const { session, user } = await getLocals();
 let { data } = $props();
+let { plm, userId, username } = data;
+let { getAllLists } = plm;
 
 const { title, items } = rf.createList.fields;
+// const lists = getAllLists(userId);
 
+// let list : List;
+// let lists : List[];
+// let listItem : Item;
+// let listItems : Item[];
+// listItem.text = '';
+// const { text } = listItem;
 
-let lists : List[];
-let list : List;
 
 </script>
 
@@ -31,7 +39,7 @@ let list : List;
 	{#if data?.userId}
 		<h1>Todo Lists</h1>
 		<div class="todo-list">
-			{#each await rf?.getLists() as list}
+			{#each await getAllLists(data.userId) as list}
 				<div>
 					<p>{list.title}</p>
 					<p>{list.owner}</p>
@@ -60,12 +68,11 @@ let list : List;
 				<input
 					type="text"
 					autocomplete="off"
-					onkeydown={async (e) => {
+					onkeydown={e => {
 						if (e.key !== 'Enter') return;
 
 						const input = e.currentTarget;
-						const text = input.value;
-						const response = await 
+						// listItem.text = input?.value ?? '';
 					}}
 				/>
 			</label>

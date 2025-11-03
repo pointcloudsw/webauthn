@@ -1,5 +1,5 @@
-import { navRoutes } from '$lib/constants';
+import { navMap } from '$lib/constants';
 
 export function load() {
-	return { navRoutes };
+	return { navMap };
 }

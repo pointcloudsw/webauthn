@@ -1,21 +1,29 @@
 {
-	"name": "example-sveltekit-email-password-webauthn",
+	"name": "webauthn",
 	"version": "0.0.1",
 	"private": true,
+	"config": {
+		"bld": "node_exec npx vite build -m production",
+		"chk": "node_exec npx sv check",
+		"cln": "clean node_modules .svelte_kit/output",
+		"exec": "npx tsx npm/run",
+		"nci": "node_exec npm ci",
+		"prd_prms": "--cors --host www1.pcpllc.us --port 8443 -l info",
+		"rslt_ps": "$( if ( $? -ne 0 ) { exit } )"
+	},
 	"scripts": {
-		"check": "/bin/rm -rf node_modules/ .svelte-kit/output && npm ci && npx sv check",
-		"clean": "/bin/rm -rf node_modules/ .svelte-kit/output && npm ci && npx sv check && npx vite build -m production",
-		"dev": "/bin/rm -rf node_modules/ .svelte-kit/output && npm ci && npx sv check && vite build -m development && npx vite dev --host",
+		"build": "$npm_package_config_exec $npm_package_config_cln && $npm_package_config_exec $npm_package_config_nci && $npm_package_config_exec $npm_package_config_chk && ([ $? -ne 0 ] && return) && $npm_package_config_exec $npm_package_config_bld",
+		"check": "$npm_package_config_exec $npm_package_config_chk",
+		"ci": "$npm_package_config_exec $npm_package_config_nci",
+		"clean": "$npm_package_config_exec $npm_package_config_cln",
+		"dev": "$npm_package_config_exec $npm_package_config_cln && $npm_package_config_exec $npm_package_config_nci && $npm_package_config_exec $npm_package_config_chk && ([ $? -ne 0 ] && return) && $npm_package_config_exec node_exec_detach npx vite dev",
+		"prod": "$npm_package_config_exec $npm_package_config_cln && $npm_package_config_exec $npm_package_config_nci && $npm_package_config_exec $npm_package_config_chk && ([ $? -ne 0 ] && return) && $npm_package_config_exec $npm_package_config_bld && ([ $? -ne 0 ] && return) && $npm_package_config_exec node_exec_detach node_modules/.bin/vite -m production $npm_package_config_prd_prms",
 		"format": "prettier --write .",
 		"lint": "prettier --check .",
 		"preview": "vite preview",
-		"prod": "/bin/rm -rf node_modules/ .svelte-kit/output && npm ci && npx sv check && vite build -m production && node node_modules/.bin/vite -m production --cors --host www1.pcpllc.us --port 8443 -l info",
-		"rebuild:dev": "/bin/rm -rf node_modules/ .svelte-kit/output && npm ci && npx sv check && vite build -m development",
-		"rebuild:prod": "/bin/rm -rf node_modules/ .svelte-kit/output && npm ci && npx sv check && npx vite build -m production",
-		"refresh": "/bin/rm -rf node_modules/ .svelte-kit/output && npm ci",
 		"sk:check": "svelte-check --tsconfig ./tsconfig.json",
-		"sk:sync-check-watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"sk:sync": "svelte-kit sync"
+		"sk:sync": "svelte-kit sync",
+		"sk:sync-check-watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.11",

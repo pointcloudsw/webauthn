@@ -1,20 +1,10 @@
 import type { Collection } from "@mysql/xdevapi";
-import { MySQLXAccessor, type ConnectionConfig, type MySqlDoc } from "./MySQLXAccessor";
+import { type AppDb, MySQLXAccessor, type ConnectionConfig, type MySqlDoc } from "./MySQLXAccessor";
 import { env, loadEnvFile } from 'node:process';
-import { type List } from '$lib/schema';
+import { type List, type Item } from '$lib/server/list/schema';
 import { projectlib } from "$lib/constants";
-
+import { type int64 } from "@mysql/xdevapi/types/lib/Protocol/ScalarValues";
 loadEnvFile(`.${projectlib}/server/.env`);
-
-
-
-interface AppDb {
-    cfg: ConnectionConfig;
-    collection: string;
-    db?: MySQLXAccessor;  // Fixed: Removed angle brackets
-}
-
-
 
 const adb: AppDb = {
     collection: `todo_lists`,
@@ -66,6 +56,30 @@ export async function getListsByUser(user: string | number) : Promise<MySqlDoc[]
     return lists;
 }
 
+export async function getListByListId(listId: number, user: string | number) : Promise<MySqlDoc[]> {
+    let lists : MySqlDoc[];
+
+    if (! ( user && listId ) ){
+        lists = [];
+        return lists;
+    }
+
+    if ( !adb.db?.isConnected() ) await dbConnect();
+
+    if ( adb.db )
+        lists = await adb.db.find(
+            adb.cfg.schema ?? '',
+            adb.collection,
+            `owner = :uid AND id = :lid`, {
+                bind: { 'uid': user, 'lid': listId }
+            });
+    else
+        lists = [];
+
+    return lists;
+}
+
+
 export async function addList(list: {owner: string | number, title: string, items: Item[]}) : Promise<string[]> {
     let result : string[];
     let coll : Collection;
@@ -86,9 +100,30 @@ export async function addList(list: {owner: string | number, title: string, item
     return result;
 }
 
-export async function delList(){
+export async function delList(list: {owner: string | number, id: number}) : Promise<int64> {
+    let result : int64;
+    let coll : Collection;
 
+    if (!adb.db) {
+        throw new Error('Database not connected. Call dbConnect() first.');
+    }
+
+    coll = await adb.db.getCollection(adb.cfg.schema ?? '',adb.collection);
+    if (!coll)
+        throw new Error("DB collection found");
+    
+    result = await adb.db.delete(
+        adb.cfg.schema ?? '',
+        adb.collection,
+        `owner = :uid AND id = :lid`,
+        {
+            bind: { 'uid': list.owner, 'lid': list.id }
+        }
+    );
+    return result;
 }
+
+
 export async function editList(){
 
 }
@@ -96,7 +131,8 @@ export async function editList(){
 export async function editListItem(){
     
 }
-export async function addListItem(input){
+/*
+export async function addListItem(listItem: Item){
     if (!adb.db) {
         throw new Error('Database not connected. Call dbConnect() first.');
     }
@@ -112,6 +148,7 @@ export async function addListItem(input){
     );
     return result;    
 }
+*/
 export async function delListItem(){
     
 }
