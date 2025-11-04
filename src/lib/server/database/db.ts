@@ -100,6 +100,30 @@ export async function addList(list: {owner: string | number, title: string, item
     return result;
 }
 
+export async function updateList(list: List) : Promise<int64> {
+    let result : int64;
+    let coll : Collection;
+
+    if (!adb.db) {
+        throw new Error('Database not connected. Call dbConnect() first.');
+    }
+
+    coll = await adb.db.getCollection(adb.cfg.schema ?? '',adb.collection);
+    if (!coll)
+        throw new Error("DB collection found");
+
+    result = await adb.db.update(
+        adb.cfg.schema ?? '',
+        adb.collection,
+        list,
+        `owner = :uid AND id = :lid`,
+        {
+            bind: { 'uid': list.owner, 'lid': list.id }
+        }
+    );
+    return result;
+}
+
 export async function delList(list: {owner: string | number, id: number}) : Promise<int64> {
     let result : int64;
     let coll : Collection;

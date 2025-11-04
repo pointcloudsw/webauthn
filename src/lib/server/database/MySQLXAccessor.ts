@@ -153,6 +153,34 @@ export class MySQLXAccessor {
     return result.fetchAll();
   }
 
+  async update(
+    schemaName: string,
+    collectionName: string,
+    updates: Record<string, any>,
+    criteria: string,
+    options?: QueryOptions
+  ): Promise<int64> {
+    const collection = await this.getCollection(schemaName, collectionName);
+    let modify = collection.modify(criteria);
+
+
+    if (options?.bind) {
+      modify = modify.bind(options.bind);
+    }
+
+    if (options?.limit) {
+      modify = modify.limit(options.limit);
+    }    
+
+    for (const [key, value] of Object.entries(updates)) {
+      modify = modify.set(key, value);
+    }
+
+    const result = await modify.execute();
+
+    return result.getAffectedItemsCount();
+  }
+
   async updateOne(
     schemaName: string,
     collectionName: string,

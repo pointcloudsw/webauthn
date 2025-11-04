@@ -1,5 +1,5 @@
 import { type List, type Item } from './schema';
-import { delList, getListByListId, getListsByUser } from '../database/db';
+import { addList, delList, getListByListId, getListsByUser } from '../database/db';
 import type { int64 } from '@mysql/xdevapi/types/lib/Protocol/ScalarValues';
 
 
@@ -38,7 +38,7 @@ export class PersistentListManager {
         };
 
         await this.saveList(list);
-        await this.addListToUserIndex(list.dbid);
+        // await this.addListToUserIndex(list.dbid);
         
         return list;
     }
@@ -168,13 +168,13 @@ export class PersistentListManager {
 
             const item: Item = {
                 created: new Date(),
-                dbid: this.generateId(),
+                // dbid: this.generateId(),
                 due: itemData.due || new Date(),
                 editable: itemData.editable !== undefined ? itemData.editable : true,
                 flag: itemData.flag || 0,
-                id: Date.now(),
+                id: lists[0]?.items?.length || 0,
                 priority: itemData.priority || 0,
-                sequence: list.items.length,
+                sequence: lists[0]?.items?.length || 0,
                 status: itemData.status || 0,
                 text: itemData.text || ''
             };
@@ -457,10 +457,27 @@ export class PersistentListManager {
 
     // Private helper methods
     private async saveList(list: List): Promise<boolean> {
+        if (list.owner !== this.userId) {
+            console.error('Cannot update list owned by another user');
+            return false;
+        }
+        
+        if (!list.editable) {
+            console.error('List is not editable');
+            return false;
+        }
+        
+        if(getListByListId(list.id, list.owner)?.length < 1)
+            // adding / creating new list
+            const result = await addList(list);
+        else
+            const result = await up
+
         try {
-            const key = this.getStorageKey(list.dbid);
-            const result = await window.storage.set(key, JSON.stringify(list));
-            return result !== null;
+            // const key = this.getStorageKey(list.dbid);
+            // const result = await window.storage.set(key, JSON.stringify(list));
+            // return result !== null;
+            this.get
         } catch (error) {
             console.error('Error saving list:', error);
             return false;
