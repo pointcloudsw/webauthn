@@ -5,7 +5,7 @@ import { createList, getLists } from './data.remote.js';
 let { data } = $props();
 let { userId, username } = data;
 
-createList.fields.created.set(new Date());
+createList.fields.created.set((new Date()).toString());
 createList.fields.editable.set(true);
 createList.fields.owner.set(userId);
 
