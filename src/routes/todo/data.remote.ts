@@ -1,47 +1,63 @@
-import { json, text, redirect, type RemoteQueryFunction } from '@sveltejs/kit';
-import { type List } from '$lib/schema';
+import { json, text, redirect, type RemoteQueryFunction, type RemoteForm } from '@sveltejs/kit';
 
 import * as v from 'valibot';
+import { List, type Item } from '$lib/types/list';
 import { command, form, query } from "$app/server";
 import { addList, getListsByUser } from '$lib/server/database/db';
 
-import { getLocals } from '$lib/auth.remote';
+// import { getLocals } from '$lib/auth.remote';
 import { refreshAll } from '$app/navigation';
 import { logger } from '$lib/exports';
-import { InferencePriority } from 'typescript';
 
 
 
-const getLists : RemoteQueryFunction<void, List[]> = query(async () => {
+export const getLists = query( v.number(), async userId => {
 
-	const { session, user, headers } = await getLocals();
-
-	
-	logger(`SESSION: ${session?.userId}, USER: ${user?.id}, HEADERS: ${headers}`);
-	
-	const id = session?.userId ?? '';
-
-	const lists : List[] = await getListsByUser(id) as unknown as List[];
+	const lists = await getListsByUser(userId) as unknown as List[];
 	return lists;
 });
 
-const createList = form(
-	v.object({
-		title: v.string(),
-		items: v.array(v.string())
-	}),
-	async ({ title, items }) => {
-		let id;
-		if ( !( id = (await getLocals()).user?.id ) ){
-			throw new Error("user not found");
-			return [ 'user not found' ];
-		}
+// export const createList : RemoteForm<List,string[]> = form(list<List>, async ({ created, dbid, editable, id, items, owner, title } : List = list) => {
+// 		const result = await addList(list);
+// 		if ( result ) await getLists(list?.owner).refresh();
+// 		return result;
+// 	}
+// );
+// const list = v.object({
+// 	created: v.optional(v.date()),
+// 	dbid: v.optional(v.string()),
+// 	editable: v.optional(v.boolean(),true),
+// 	id: v.optional(v.number()),
+// 	items: v.optional(v.array(v.optional(v.object({
+// 		created: v.optional(v.date(), (()=>new Date())),
+// 		dbid: v.optional(v.string()),
+// 		due: v.optional(v.date()),
+// 		editable: v.optional(v.boolean(), true),
+// 		flag: v.optional(v.number()),
+// 		id: v.optional(v.number()),
+// 		priority: v.optional(v.number()),
+// 		sequence: v.optional(v.number()),
+// 		status: v.optional(v.number()),
+// 		text: v.optional(v.string())
+// 	})))),
+// 	owner: v.optional(v.string()),
+// 	title: v.optional(v.string())
+// });
+const list = v.object({
+	created: v.optional(v.string()),
+	dbid: v.optional(v.string()),
+	editable: v.optional(v.boolean(), true),
+	id: v.optional(v.number(), -1),
+	items: v.optional(v.array(v.object({created: v.optional(v.string()),dbid: v.optional(v.string()),editable: v.optional(v.boolean(), true),flag: v.optional(v.number()),id: v.optional(v.number()),priority: v.optional(v.number()),sequence: v.optional(v.number()),status: v.optional(v.number()),text: v.optional(v.string())}))),
+	owner: v.optional(v.number(), -1),
+	title: v.optional(v.string(), '')
+});
+export const createList=form(list, async data => {
+	let { created, dbid, editable, id, items, owner, title } = data;
+	const result = await addList({created, dbid, editable, id, items, owner, title});
 
-		const result : string[] = await addList({owner: id, title, items});
-
-		// if ( result ) refreshAll();
-
-		return result;
+	if ( result ) await getLists(data?.owner).refresh();
+	return result;
 	}
 );
 
@@ -76,4 +92,3 @@ const createListItem = form(	v.object({
 		return result;
 	});
 	*/
-	export { getLists, createList };

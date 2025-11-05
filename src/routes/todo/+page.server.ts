@@ -1,7 +1,6 @@
-import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
+import { redirect, type RequestEvent } from "@sveltejs/kit";
 
 import type { Actions } from "./$types";
-import { PersistentListManager } from "$lib/server/list/PersistentListManager";
 import { logger } from '$lib/exports';
 
 
@@ -9,9 +8,8 @@ export function load(event) {
 	
 	const username : string = event.locals?.user?.username ?? '';
 	const userId : number = event.locals.session?.userId ?? -1;
-	const plm : PersistentListManager = new PersistentListManager(userId);
 
-	return { username, userId, plm };
+	return { username, userId };
 }
 
 export const actions: Actions = {

@@ -1,9 +1,10 @@
 import type { Collection } from "@mysql/xdevapi";
 import { type AppDb, MySQLXAccessor, type ConnectionConfig, type MySqlDoc } from "./MySQLXAccessor";
 import { env, loadEnvFile } from 'node:process';
-import { type List, type Item } from '$lib/server/list/schema';
+import { type List, type Item } from '$lib/types/list';
 import { projectlib } from "$lib/constants";
-import { type int64 } from "@mysql/xdevapi/types/lib/Protocol/ScalarValues";
+import type { int64 } from "@mysql/xdevapi/types/lib/Protocol/ScalarValues";
+// import { type int64 } from "@mysql/xdevapi/types/lib/Protocol/ScalarValues";
 loadEnvFile(`.${projectlib}/server/.env`);
 
 const adb: AppDb = {
@@ -80,7 +81,8 @@ export async function getListByListId(listId: number, user: string | number) : P
 }
 
 
-export async function addList(list: {owner: string | number, title: string, items: Item[]}) : Promise<string[]> {
+// export async function addList(list: List) : Promise<string[]> {
+export async function addList(list: List) : Promise<string[]> {
     let result : string[];
     let coll : Collection;
 

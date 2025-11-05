@@ -2,7 +2,7 @@ import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 
 import type { Actions } from "./$types";
 import { logger } from '$lib/exports';
-import type { MySqlDoc } from "$lib/schema";
+import type { MySqlDoc } from "$lib/server/database/schema";
 import { getListsByUser } from "$lib/server/database/db";
 
 

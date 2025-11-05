@@ -1,5 +1,5 @@
 <script lang="ts">
-import { type List } from "$lib/schema";
+import { type List } from '$lib/types/list';
 
 let { data } = $props();
 
