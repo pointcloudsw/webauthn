@@ -56,7 +56,13 @@ export const createList=form(list, async data => {
 	let { created, dbid, editable, id, items, owner, title } = data;
 	const result = await addList({created, dbid, editable, id, items, owner, title});
 
-	if ( result ) await getLists(data?.owner).refresh();
+	logger(`Result: ${result.toString()}`);
+	if ( result ){
+		logger(`Refreshing...`);
+		await getLists(owner).refresh();
+		logger(`Done.`);
+
+	}
 	return result;
 	}
 );

@@ -1,9 +1,9 @@
 <script lang="ts">
 import { createList, getLists } from './data.remote.js';
-import EditListModal from './EditListModal.svelte';
-import ListForm from './ListForm.svelte';
+// import EditListModal from './EditListModal.svelte';
+// import ListForm from './ListForm.svelte';
 import { supportsPopover } from '$lib/lib.js';
-import { showModal } from './modalState.svelte';
+// import { showModal } from './modalState.svelte';
 
 let { data } = $props();
 let { userId, username } = data;
@@ -14,7 +14,13 @@ createList.fields.owner.set(userId);
 
 const { created, dbid, editable, id, items, owner, title } = createList.fields;
 
-// let showModal = $state(false);
+// const dialog : HTMLDialogElement = document.querySelector('#editModal')!;
+const showModal = $state({value: false});
+	let dialog: HTMLDialogElement = $state() as HTMLDialogElement; // HTMLDialogElement
+
+	$effect(() => {
+		if (showModal?.value) dialog.showModal();
+	});
 
 </script>
 
@@ -28,96 +34,9 @@ const { created, dbid, editable, id, items, owner, title } = createList.fields;
 	{/if}
 	<p>{username ?? "Please login"}</p> -->
 
-
-{#if !supportsPopover()}
-	<!-- <button popovertarget="editModal" popovertargetaction="show"> -->
-	<button popovertarget="editModal">
-	New List
-	</button>
-	<div id="editModal" popover>
-		<h2>Popover List Entry</h2>
-		<!-- <ListForm data={{listId:1, userId}} bind:showModal={showModal.value}/> -->
-		<form {...createList} enctype="multipart/form-data">
-				<label>
-					<h2>Title</h2>
-					<input {...title.as('text')} />
-				</label>
-				<label>
-					Editable
-					<input {...editable.as('checkbox')} />
-				</label>
-				<label>
-					Owner
-					<input {...owner.as('number')} />
-				</label>
-				<label>
-					Created
-					<input {...created.as('text')} />
-				</label>
-				<label>
-					ID
-					<input {...id.as('number')} />
-				</label>
-				<label>
-					DBID
-					<input {...dbid.as('text')} />
-				</label>
-				<p>Items
-					<label>
-						Created
-						<input {...items[0].created.as('text')} />
-					</label>
-					<label>
-						DBID
-						<input {...items[0].dbid.as('text')} />
-					</label>
-					<label>
-						Editable
-						<input {...items[0].editable.as('checkbox')} />
-					</label>
-					<label>
-						Flag
-						<input {...items[0].flag.as('number')} />
-					</label>
-					<label>
-						ID
-						<input {...items[0].id.as('number')} />
-					</label>
-					<label>
-						Priority
-						<input {...items[0].priority.as('number')} />
-					</label>
-					<label>
-						Sequence
-						<input {...items[0].sequence.as('number')} />
-					</label>
-					<label>
-						Status
-						<input {...items[0].status.as('number')} />
-					</label>
-					<label>
-						Description
-						<input {...items[0].text.as('text')} />
-					</label>
-				</p>
-				<!-- <button type="button" popovertarget="editModal" popovertargetaction="hide">Save</button> -->
-				<button type="button" popovertarget="editModal" onclick={()=>(console.log(createList.fields))}>Save</button>
-			</form>
-		<!-- <button popovertarget="editModal" popovertargetaction="hide"> -->
-			<!-- Save & Close -->
-		<!-- </button> -->
-	</div>
-{:else}
-	<button onclick={() => (showModal.value = true)}> New List (Modal)</button>
+		<button id="newList" onclick={()=>dialog?.showModal()}>New List</button>
 
 
-	<EditListModal bind:showModal={showModal.value}>
-		{#snippet header()}
-			<h2>Modal List Entry</h2>
-			{/snippet}
-			<ListForm data={{listId:1, userId}} />
-	</EditListModal>
-{/if}
 </header>
 
 <main>
@@ -213,7 +132,174 @@ const { created, dbid, editable, id, items, owner, title } = createList.fields;
 				</p>
 				<button type="button">Save</button>
 			</form> -->
-			
+{#if supportsPopover()}
+<!-- <button popovertarget="editModal"> -->
+		<!-- <button popovertarget="editModal" popovertargetaction="show">New List</button> -->
+	<!-- <dialog id="editModal" popover> -->
+
+	<!-- <dialog id="editModal" bind:this={dialog} onclose={async ()=> (showModal.value=false && await getLists(userId).refresh())}> -->
+	<dialog id="editModal" bind:this={dialog} onclose={()=> (showModal.value=false)}>
+		<!-- <h2>Popover List Entry</h2> -->
+		<!-- <ListForm data={{listId:1, userId}} bind:showModal={showModal.value}/> -->
+		<!-- <form {...createList} enctype="multipart/form-data" id="editModal" popover> -->
+		<form {...createList} enctype="multipart/form-data">
+		<h2>Popover List Entry</h2>
+				<label>
+					<h2>Title</h2>
+					<input {...title.as('text')} />
+				</label>
+				<label>
+					Editable
+					<input {...editable.as('checkbox')} />
+				</label>
+				<label>
+					Owner
+					<input {...owner.as('number')} />
+				</label>
+				<label>
+					Created
+					<input {...created.as('text')} />
+				</label>
+				<label>
+					ID
+					<input {...id.as('number')} />
+				</label>
+				<label>
+					DBID
+					<input {...dbid.as('text')} />
+				</label>
+				<p>Items
+					<label>
+						Created
+						<input {...items[0].created.as('text')} />
+					</label>
+					<label>
+						DBID
+						<input {...items[0].dbid.as('text')} />
+					</label>
+					<label>
+						Editable
+						<input {...items[0].editable.as('checkbox')} />
+					</label>
+					<label>
+						Flag
+						<input {...items[0].flag.as('number')} />
+					</label>
+					<label>
+						ID
+						<input {...items[0].id.as('number')} />
+					</label>
+					<label>
+						Priority
+						<input {...items[0].priority.as('number')} />
+					</label>
+					<label>
+						Sequence
+						<input {...items[0].sequence.as('number')} />
+					</label>
+					<label>
+						Status
+						<input {...items[0].status.as('number')} />
+					</label>
+					<label>
+						Description
+						<input {...items[0].text.as('text')} />
+					</label>
+				</p>
+				<!-- <button type="button" popovertarget="editModal" popovertargetaction="hide">Save</button> -->
+				<!-- <button type="button" popovertarget="editModal" onclick={()=>(console.log(createList.fields))}>Save</button> -->
+				<!-- <button popovertarget="editModal" popovertargetaction="show">Save</button> -->
+				<button type="reset">Clear</button>
+				<button type="reset" onclick={()=>{dialog?.close(); showModal.value=false}}>Cancel</button>
+				<button type="submit" onclick={()=>{dialog?.close(); showModal.value=false}}>Save</button>
+			</form>
+		<!-- <button popovertarget="editModal" popovertargetaction="hide"> -->
+			<!-- Save & Close -->
+		<!-- </button> -->
+		</dialog>
+
+{:else}
+	<!--
+<button onclick={() => (showModal.value = true)}> New List (Modal)</button>
+
+
+	<EditListModal bind:showModal={showModal.value}>
+		{#snippet header()}
+			<h2>Modal List Entry</h2>
+			{/snippet}
+			<ListForm data={{listId:1, userId}} />
+	</EditListModal>
+-->
+
+		<form {...createList} enctype="multipart/form-data">
+				<label>
+					<h2>Title</h2>
+					<input {...title.as('text')} />
+				</label>
+				<label>
+					Editable
+					<input {...editable.as('checkbox')} />
+				</label>
+				<label>
+					Owner
+					<input {...owner.as('number')} />
+				</label>
+				<label>
+					Created
+					<input {...created.as('text')} />
+				</label>
+				<label>
+					ID
+					<input {...id.as('number')} />
+				</label>
+				<label>
+					DBID
+					<input {...dbid.as('text')} />
+				</label>
+				<p>Items
+					<label>
+						Created
+						<input {...items[0].created.as('text')} />
+					</label>
+					<label>
+						DBID
+						<input {...items[0].dbid.as('text')} />
+					</label>
+					<label>
+						Editable
+						<input {...items[0].editable.as('checkbox')} />
+					</label>
+					<label>
+						Flag
+						<input {...items[0].flag.as('number')} />
+					</label>
+					<label>
+						ID
+						<input {...items[0].id.as('number')} />
+					</label>
+					<label>
+						Priority
+						<input {...items[0].priority.as('number')} />
+					</label>
+					<label>
+						Sequence
+						<input {...items[0].sequence.as('number')} />
+					</label>
+					<label>
+						Status
+						<input {...items[0].status.as('number')} />
+					</label>
+					<label>
+						Description
+						<input {...items[0].text.as('text')} />
+					</label>
+				</p>
+				<!-- <button type="button" popovertarget="editModal" popovertargetaction="dide">Save</button> -->
+				<!-- <button type="button" popovertarget="editModal" onclick={()=>(console.log(createList.fields))}>Save</button> -->
+				<!-- <button type="button">Save</button> -->
+				<button>Save</button>
+			</form>
+	{/if}			
 		</section>
 	{/if}
 
