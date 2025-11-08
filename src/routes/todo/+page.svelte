@@ -1,8 +1,9 @@
 <script lang="ts">
-import { createList, getLists } from './data.remote.js';
+import { createList, deleteList, getLists } from './data.remote.js';
 // import EditListModal from './EditListModal.svelte';
 // import ListForm from './ListForm.svelte';
 import { supportsPopover } from '$lib/lib.js';
+	import { List } from '$lib/types/list.js';
 // import { showModal } from './modalState.svelte';
 
 let { data } = $props();
@@ -55,6 +56,7 @@ const showModal = $state({value: false});
 							 {i.editable}</p>
 						{/each}
 						</div>
+						<button onclick={(e) => {deleteList({id: e.currentTarget.fields.list.id, owner: e.currentTarget.list.owner})}}>DELETE</button>
 					</div>
 				{:else}
 					<p>no records found</p>

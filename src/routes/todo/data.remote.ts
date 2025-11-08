@@ -2,8 +2,8 @@ import { json, text, redirect, type RemoteQueryFunction, type RemoteForm } from 
 
 import * as v from 'valibot';
 import { List, type Item } from '$lib/types/list';
-import { command, form, query } from "$app/server";
-import { addList, getListsByUser } from '$lib/server/database/db';
+import { form, query } from "$app/server";
+import { addList, delList,getListsByUser } from '$lib/server/database/db';
 
 // import { getLocals } from '$lib/auth.remote';
 import { refreshAll } from '$app/navigation';
@@ -52,9 +52,30 @@ const list = v.object({
 	owner: v.optional(v.number(), -1),
 	title: v.optional(v.string(), '')
 });
+const listKey = v.object({
+	id: v.optional(v.number(), -1),
+	owner: v.optional(v.number(), -1)
+});
+
+
 export const createList=form(list, async data => {
 	let { created, dbid, editable, id, items, owner, title } = data;
 	const result = await addList({created, dbid, editable, id, items, owner, title});
+
+	logger(`Result: ${result.toString()}`);
+	if ( result ){
+		logger(`Refreshing...`);
+		await getLists(owner).refresh();
+		logger(`Done.`);
+
+	}
+	return result;
+	}
+);
+
+export const deleteList=form(listKey, async data => {
+	let { owner } = data;
+	const result = await delList(data);
 
 	logger(`Result: ${result.toString()}`);
 	if ( result ){
