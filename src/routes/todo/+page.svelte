@@ -44,19 +44,21 @@ const showModal = $state({value: false});
 	{#if userId}
 		<section class="lists">
 			<h1>Todo Lists</h1>
-			<div class="todo-list">
-				{#each await getLists(userId) as list}
-					<div>
-						<p>{list.title}</p>
-						<p>{list.owner}</p>
-						<div class="todo-items">
+			<div class="todo-list" onclickcapture={(e:any)=>{if ( e.target.tagName.toLowerCase() === 'button' && e.target.outerHTML.includes('data-item=') && e.target.outerHTML.toLowerCase().includes('delete')) console.log(`div onclickcapture ${e.target}: ${e.target.parentElement.attributes['data-id']?.value}`); console.log(e.target.parentNode.attributes['data-id']?.nodeValue)}}>
+				{#each await getLists(userId) as list (list)}
+					<div data-id={list.id} data-item={`list-${list.id}`}>
+						<p data-item={`list-${list.id}-id`}>{list.id}</p>
+						<p data-item={`list-${list.id}-title`}>{list.title}</p>
+						<p data-item={`list-${list.id}-owner`}>{list.owner}</p>
+						<button data-item={`list-${list.id}-button`}>DELETE</button>
+
+						<div data-item={`list-${list.id}-items`} class="todo-items">
 						{#each list?.items as i}
-							<p>{i.text}
+							<p data-item={`list-${list.id}-items-${i}`}>{i.text}
 							{i.created}
 							 {i.editable}</p>
 						{/each}
 						</div>
-						<button onclick={(e) => {deleteList({id: e.currentTarget.fields.list.id, owner: e.currentTarget.list.owner})}}>DELETE</button>
 					</div>
 				{:else}
 					<p>no records found</p>
