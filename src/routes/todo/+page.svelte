@@ -1,9 +1,10 @@
 <script lang="ts">
-import { createList, deleteList, getLists } from './data.remote';
+import { createList, updateList, getLists } from './data.remote';
 
 
 import { supportsPopover } from '$lib/lib';
 	import { logger } from '$lib/logger';
+	import { entries } from 'valibot';
 let { data } = $props();
 let { userId, username } = data;
 
@@ -33,13 +34,15 @@ const showModal = $state({value: false});
 		<section class="lists">
 			<h1>Todo Lists</h1>
 
-				<form {...deleteList} class="todo-list">
+				<form {...updateList} class="todo-list">
 					{#each await getLists(userId) as list (list)}
 					<div>
 						<p>{list.id}</p>
 						<p>{list.title}</p>
 						<p>{list.owner}</p>
-						<button {...deleteList.fields.id.as('submit',[list.id, userId])}>DELETE</button>
+						<button {...updateList.fields.action.as('submit',['update', [ list.id, list.title, list.owner, list?.items ]])}>Update</button>
+						<button {...updateList.fields.update.as('submit',[list.id,list.title,list.owner,list?.items])}>Save</button>
+						<button {...updateList.fields.delete.as('submit',[list.id, userId])}>DELETE</button>
 
 
 						<div data-item={`list-${list.id}-items`} class="todo-items">

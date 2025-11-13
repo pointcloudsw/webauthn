@@ -46,9 +46,11 @@ export const createList=form(list, async data => {
 );
 
 // let listKey: ListKey;
-export const deleteList=form('unchecked', async data => {
-	let [ id, owner ] = data.id.toString().split(',').map(e => Number(e));
+export const updateList=form('unchecked', async data => {
 	let result;
+
+	if ( data.delete ){
+	let [ id, owner ] = data.delete.toString().split(',').map(e => Number(e));
 	// let i = data.get('id') as number;
 	// console.log(data.id.split(','));
 	logger(`DATA: ${data}, OWNER: ${owner}, LISTID: ${id}`);
@@ -66,6 +68,16 @@ export const deleteList=form('unchecked', async data => {
 } catch(err) { throw err}
 	return result;
 	}
+else if (data.update) {
+	// let [ info ] = data;
+	let info = data.update.toString().split(','); 
+	logger(...info);
+} else {
+		let info = data.action.toString().split(','); 
+	logger(info);
+	console.log(data.action);
+}
+}
 );
 
 
