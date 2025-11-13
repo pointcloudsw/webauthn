@@ -52,10 +52,7 @@ const list = v.object({
 	owner: v.optional(v.number(), -1),
 	title: v.optional(v.string(), '')
 });
-const listKey = v.object({
-	id: v.optional(v.number(), -1),
-	owner: v.optional(v.number(), -1)
-});
+const listKey = v.object({ id: v.number(), owner: v.number()});
 
 
 export const createList=form(list, async data => {
@@ -73,20 +70,30 @@ export const createList=form(list, async data => {
 	}
 );
 
-export const deleteList=form(listKey, async data => {
-	let { owner } = data;
-	const result = await delList(data);
+// let listKey: ListKey;
+export const deleteList=form('unchecked', async data => {
+	let [ id, owner ] = data.id.toString().split(',').map(e => Number(e));
+	let result;
+	// let i = data.get('id') as number;
+	// console.log(data.id.split(','));
+	logger(`DATA: ${data}, OWNER: ${owner}, LISTID: ${id}`);
+	// if ( id && owner )
+	try {
+		result = await delList({id, owner});
 
-	logger(`Result: ${result.toString()}`);
+	// logger(`Result: ${result.toString()}`);
 	if ( result ){
 		logger(`Refreshing...`);
 		await getLists(owner).refresh();
 		logger(`Done.`);
 
 	}
+} catch(err) { throw err}
 	return result;
 	}
 );
+
+
 
 // const modifyList = form( async ({}) => {});
 // const removeList = command( async ({}) => {});

@@ -1,11 +1,20 @@
 <script lang="ts">
 import { createList, deleteList, getLists } from './data.remote.js';
+// import type { PageData } from '../$types';
+
+
 // import EditListModal from './EditListModal.svelte';
 // import ListForm from './ListForm.svelte';
 import { supportsPopover } from '$lib/lib.js';
-	import { List } from '$lib/types/list.js';
-// import { showModal } from './modalState.svelte';
+// import {type int64} from '@mysql/xdevapi/types/lib/Protocol/ScalarValues';
+	import { logger } from '$lib/logger.js';
+	// import { form } from '$app/server';
 
+
+	// import { List, ListKey } from '$lib/types/list.js';
+// import { showModal } from './modalState.svelte';
+// let listKey: ListKey;
+// let r: int64;
 let { data } = $props();
 let { userId, username } = data;
 
@@ -14,6 +23,34 @@ createList.fields.editable.set(true);
 createList.fields.owner.set(userId);
 
 const { created, dbid, editable, id, items, owner, title } = createList.fields;
+
+// const fd = new FormData();
+// const { id:lkId, owner:lkOwner } = deleteList.fields;
+// const targetList = { id: -1, owner: -1 };
+// const buttonClick = (e:any) => {
+// const buttonClick = ({form,data,e}) => {
+// 	console.log(e);
+// 	// deleteList.fields.id.set(e.target.attributes['data-id'].value);
+// 	// deleteList.fields.owner.set(userId);
+// 	targetList.id = e.target.attributes['data-id'].value;
+// 	targetList.owner = userId;
+
+// 	// deleteList.fields.set({
+// 	// 	id: e.target.attributes['data-id'].value,
+// 	// 	owner: userId
+// 	// });
+// 	console.log(deleteList.fields.value());
+// 	console.log('USERID:', userId);
+// 	console.log('e.target:', e.target);
+// 	console.log('e.currentTarget:', e.currentTarget);
+// 	console.log('DELETELIST:');
+// 	// console.log(deleteList);
+// 	// return deleteList.fields.value()
+// 	// deleteList(targetList);
+// };
+// const getListId = (e:any) => {
+// 	return e.target.attributes['list-id'].value;
+// }
 
 // const dialog : HTMLDialogElement = document.querySelector('#editModal')!;
 const showModal = $state({value: false});
@@ -44,13 +81,31 @@ const showModal = $state({value: false});
 	{#if userId}
 		<section class="lists">
 			<h1>Todo Lists</h1>
-			<div class="todo-list" onclickcapture={(e:any)=>{if ( e.target.tagName.toLowerCase() === 'button' && e.target.outerHTML.includes('data-item=') && e.target.outerHTML.toLowerCase().includes('delete')) console.log(`div onclickcapture ${e.target}: ${e.target.parentElement.attributes['data-id']?.value}`); console.log(e.target.parentNode.attributes['data-id']?.nodeValue)}}>
-				{#each await getLists(userId) as list (list)}
+			<!-- <form {...deleteList} class="todo-list" id="todo-list" onclickcapture={(e:any)=>{  console.log(e.target, e.target.value, e.target.parentElement.attributes['data-id'].value, userId); {...deleteList.id}  set( deleteList(e.target.value,userId); }}> -->
+			<!-- <form {...deleteList} class="todo-list" onclickcapture={(e:any)=>{ deleteList.fields.id.set(e.target.value); console.log(deleteList)}}> -->
+			<!-- <form {...deleteList} class="todo-list"> -->
+			<!-- <form {...deleteList} class="todo-list" onclickcapture={buttonClick}> -->
+			<!-- <form {...deleteList} class="todo-list" onclickcapture={(e:any)=>{ deleteList.fields.id.set(Number(e.target.attributes['data-id'].value)); deleteList.fields.owner.set(Number(userId))}}> -->
+
+				<!-- <form {...deleteList} class="todo-list" onclickcapture={(e:any)=>{ deleteList.fields.id.set(e.target.attributes['data-id'].value); deleteList.fields.owner.set(userId);}}> -->
+				<!-- <form {...deleteList} class="todo-list" > -->
+
+
+			<!-- <form method="POST" action="?/deleteList" class="todo-list" onclickcapture={(e:any)=>{ /*fd.set('id',e.target.attributes['data-id'].value); fd.set('owner',userId.toString()); console.log(fd.get('id')); */ buttonClick(e); console.log(targetList.id);}}> -->
+				<!-- <input {deleteList.fields.owner.set(userId)} type="hidden" name="owner" value={userId} /> -->
+
+				<!-- <form {...deleteList} class="todo-list" onclickcapture={buttonClick}> -->
+				<form {...deleteList} class="todo-list">
+					{#each await getLists(userId) as list (list)}
 					<div data-id={list.id} data-item={`list-${list.id}`}>
 						<p data-item={`list-${list.id}-id`}>{list.id}</p>
 						<p data-item={`list-${list.id}-title`}>{list.title}</p>
 						<p data-item={`list-${list.id}-owner`}>{list.owner}</p>
-						<button data-item={`list-${list.id}-button`}>DELETE</button>
+						<!-- <button data-item={`list-${list.id}-button`} value={list.id}>DELETE<input hidden {...deleteList.fields.id.as('number')}/></button> -->
+						<!-- <button data-item={`list-${list.id}-button`} value={deleteList.fields.id.as('number', name:'id', type: 'number', value: list.id )}>DELETE</button> -->
+						<!-- <input {...deleteList.for(list.id)} type="hidden" name="listId" value={list.id} /> -->
+						<button {...deleteList.fields.id.as('submit',[list.id, userId])} data-item={`list-${list.id}-button`} data-id={list.id}>DELETE</button>
+
 
 						<div data-item={`list-${list.id}-items`} class="todo-items">
 						{#each list?.items as i}
@@ -63,7 +118,8 @@ const showModal = $state({value: false});
 				{:else}
 					<p>no records found</p>
 				{/each}
-			</div>
+
+					</form>
 		</section>
 
 		
@@ -318,7 +374,7 @@ const showModal = $state({value: false});
 main {
 	display: grid;
 	/* grid: 1fr 1fr / auto; */
-	grid: auto;
+	/* grid: auto; */
 }
 main .list.new {
 	background: slategrey;
@@ -335,7 +391,7 @@ main > section > * {
 }
 .todo-list, .todo-items {
 	display: grid;
-	grid: auto;
+	/* grid: auto; */
 	/* grid-auto-flow: row; */
 	border: 2px solid red;
 }

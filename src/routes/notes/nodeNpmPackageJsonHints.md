@@ -3,6 +3,11 @@
 ### Introduction
  To simplify package build scripts defined in package.json, take a Makefile type of approach that combines, consolidates and rolls-up discrete scripts and functions into higher-level scripts that will call and manage execution of the subfunctions.
 
+### Baseline
+```sh
+pcs@est:~/$ rm -rf node_modules/ .svelte-kit/output && npm ci && npx sv check && npx vite build -m production && npx vite -m production --cors --host www1.pcpllc.us --port 8443 -l info; 
+```
+
 ### Simplifying `npm` / `package.json` based builds
  It may sometimes be helpful to abort a build when fatal errors are encountered within an executing subscript.  This requires observability into the outcome of each subscript in the end-to-end chain of execution.  The managing script needs to be able to determine the outcome of each individual subscript in the pipeline of scripts that its executing so it can decide to proceed to the next stage or abort the build in progress.
 

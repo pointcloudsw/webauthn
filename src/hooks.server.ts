@@ -35,19 +35,19 @@ const authHandle: Handle = async ({ event, resolve }) => {
 	// Get session cookie from request
 	const token = event.cookies.get("session");
 	
-	logger(`TOKEN: ${token}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
+	logger(`TOKEN: ${token}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, METHOD: ${event?.request?.method}`);
 
 	// Validate session state
 	const { session, user } = token ? validateSessionToken(token) : { session: null, user: null };
 
-	logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
+	logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, METHOD: ${event?.request?.method}`);
 
 	// If session is valid, refresh cookie
 	if ( (token && session && user) ) {
 
 		setSessionTokenCookie(event, token, session.expiresAt);
 
-		logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
+		logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, METHOD: ${event?.request?.method}`);
 
 
 	} else {
@@ -55,7 +55,7 @@ const authHandle: Handle = async ({ event, resolve }) => {
 		deleteSessionTokenCookie(event);
 		event.locals.user = null;
 		event.locals.session = null;
-		logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
+		logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, METHOD: ${event?.request?.method}`);
 
 	}
 
@@ -70,18 +70,18 @@ const redirectHandle: Handle = async ({ event, resolve }) => {
 	const { request, route, url } = event;
 	const { session, user } = event.locals;
 
-	logger(`USERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}`);
+	logger(`USERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}, METHOD: ${event?.request?.method}`);
 
 
 	if ( !( session && user ) )
 		if ( ! ( url.pathname.startsWith('/auth/') || route.id?.startsWith('/auth/') || route.id === '/' ) ) {
 	
-			logger(`\n----- REDIRECTING to / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}`);
+			logger(`\n----- REDIRECTING to / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}, METHOD: ${event?.request?.method}`);
 
 			return await redirect(303, '/');
 		}
 	
-		logger(`\n----- RESOLVING EVENT REQUEST / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}`);
+		logger(`\n----- RESOLVING EVENT REQUEST / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}, METHOD: ${event?.request?.method}`);
 
 
 	return await resolve(event);

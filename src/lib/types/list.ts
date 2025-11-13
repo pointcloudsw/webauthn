@@ -28,6 +28,9 @@ export const List = v.object({
 
 export type List = v.InferOutput<typeof List>;
 
+export const ListKey = v.pick(List, [ 'id', 'owner' ] );
+
+export type ListKey = v.InferOutput<typeof ListKey>;
 
 // export interface List {
 //     created: Date;
