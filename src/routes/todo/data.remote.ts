@@ -17,32 +17,7 @@ export const getLists = query( v.number(), async userId => {
 	return lists;
 });
 
-// export const createList : RemoteForm<List,string[]> = form(list<List>, async ({ created, dbid, editable, id, items, owner, title } : List = list) => {
-// 		const result = await addList(list);
-// 		if ( result ) await getLists(list?.owner).refresh();
-// 		return result;
-// 	}
-// );
-// const list = v.object({
-// 	created: v.optional(v.date()),
-// 	dbid: v.optional(v.string()),
-// 	editable: v.optional(v.boolean(),true),
-// 	id: v.optional(v.number()),
-// 	items: v.optional(v.array(v.optional(v.object({
-// 		created: v.optional(v.date(), (()=>new Date())),
-// 		dbid: v.optional(v.string()),
-// 		due: v.optional(v.date()),
-// 		editable: v.optional(v.boolean(), true),
-// 		flag: v.optional(v.number()),
-// 		id: v.optional(v.number()),
-// 		priority: v.optional(v.number()),
-// 		sequence: v.optional(v.number()),
-// 		status: v.optional(v.number()),
-// 		text: v.optional(v.string())
-// 	})))),
-// 	owner: v.optional(v.string()),
-// 	title: v.optional(v.string())
-// });
+
 const list = v.object({
 	created: v.optional(v.string()),
 	dbid: v.optional(v.string()),
