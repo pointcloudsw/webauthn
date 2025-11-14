@@ -1,15 +1,17 @@
 <script lang="ts">
-	let { showModal = $bindable(), header, children } = $props();
+	// let { updateListModal = $bindable(), header, children } = $props();
+	let { list } = $props();
 
 	let dialog: HTMLDialogElement = $state() as HTMLDialogElement; // HTMLDialogElement
 
 	$effect(() => {
-		if (showModal?.value) dialog.showModal();
+		if (updateListModal?.value) dialog.showModal();
 	});
+	console.log(list);
 </script>
 <dialog
 	bind:this={dialog}
-	onclose={() => (showModal.value = false)}
+	onclose={() => (updateListModal.value = false)}
 	onclick={(e) => { if (e.target === dialog) dialog.close(); }}
 >
 	<div>

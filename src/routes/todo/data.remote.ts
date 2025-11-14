@@ -29,6 +29,13 @@ const list = v.object({
 });
 // const listKey = v.object({ id: v.number(), owner: v.number()});
 
+export const getList = query( 'unchecked', async qryFltr => {
+	let [ listId, listOwner ] = qryFltr;
+
+	const lists = await getListByListId(listId, listOwner) as unknown as List[];
+	return lists;
+});
+
 
 export const createList=form(list, async data => {
 	let { created, dbid, editable, id, items, owner, title } = data;
@@ -112,11 +119,19 @@ export const listAction=form('unchecked', async data => {
 // const listKey: ListKey = [ -1, -1 ];
 
 	if ( data.action ){
-	let [ id, owner ] = data.update.toString().split(',').map(e => Number(e));
+	let [ action, id, owner ] = data.update.toString().split(',').map(e => Number(e));
 	// let i = data.get('id') as number;
 	// console.log(data.id.split(','));
 	logger(`DATA: ${data}, OWNER: ${owner}, LISTID: ${id}`);
-	// if ( id && owner )
+	if ( id && owner ) {
+
+	switch (action) {
+		case 'update':
+			console.log('update');
+			break;
+		default:
+			console.log(action);
+	}
 	try {
 		// result = await delList({id, owner});
 		result = true;
@@ -133,6 +148,7 @@ export const listAction=form('unchecked', async data => {
 	}
 } catch(err) { throw err}
 	return result;
+}
 	}
  }
 );
