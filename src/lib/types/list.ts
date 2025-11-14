@@ -28,9 +28,29 @@ export const List = v.object({
 
 export type List = v.InferOutput<typeof List>;
 
-export const ListKey = v.pick(List, [ 'id', 'owner' ] );
+/*
+const MinNumberSchema = v.pipe(v.number(), v.toMinValue(10));
+
+
+const UrlSchema = v.union([v.pipe(v.string(), v.url()), v.literal('')]);
+
+const ArrayLengthSchema = v.pipe(
+  v.array(v.number()),
+  v.minLength(1),
+  v.maxLength(3)
+);
+*/
+
+
+
+const ListKeyItem = v.union([v.string(),v.number()]);
+
+type ListKeyItem = v.InferOutput<typeof ListKeyItem>;
+
+export const ListKey = v.pipe(v.array(ListKeyItem), v.length(2));
 
 export type ListKey = v.InferOutput<typeof ListKey>;
+
 
 // export interface List {
 //     created: Date;

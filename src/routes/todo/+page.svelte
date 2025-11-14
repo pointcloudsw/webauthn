@@ -1,5 +1,5 @@
 <script lang="ts">
-import { createList, updateList, getLists } from './data.remote';
+import { createList, updateList, getLists, deleteList } from './data.remote';
 
 
 import { supportsPopover } from '$lib/lib';
@@ -14,17 +14,22 @@ createList.fields.owner.set(userId);
 
 const { created, dbid, editable, id, items, owner, title } = createList.fields;
 
-const showModal = $state({value: false});
-	let dialog: HTMLDialogElement = $state() as HTMLDialogElement; // HTMLDialogElement
+const createListModal = $state({value: false});
+let createListDialog: HTMLDialogElement = $state() as HTMLDialogElement; // HTMLDialogElement
+$effect(() => {
+	if (createListModal?.value) createListDialog.showModal();
+});
 
-	$effect(() => {
-		if (showModal?.value) dialog.showModal();
-	});
+const updateListModal = $state({value: false});
+let updateListDialog: HTMLDialogElement = $state() as HTMLDialogElement; // HTMLDialogElement
+$effect(() => {
+	if (updateListModal?.value) updateListDialog.showModal();
+});
 
 </script>
 
 <header>
-		<button id="newList" onclick={()=>dialog?.showModal()}>New List</button>
+		<button id="newList" onclick={()=>createListDialog?.showModal()}>New List</button>
 
 
 </header>
@@ -34,16 +39,17 @@ const showModal = $state({value: false});
 		<section class="lists">
 			<h1>Todo Lists</h1>
 
-				<form {...updateList} class="todo-list">
+				<form {...deleteList} class="todo-list">
 					{#each await getLists(userId) as list (list)}
 					<div>
 						<p>{list.id}</p>
 						<p>{list.title}</p>
 						<p>{list.owner}</p>
-						<button {...updateList.fields.action.as('submit',['update', [ list.id, list.title, list.owner, list?.items ]])}>Update</button>
-						<button {...updateList.fields.update.as('submit',[list.id,list.title,list.owner,list?.items])}>Save</button>
-						<button {...updateList.fields.delete.as('submit',[list.id, userId])}>DELETE</button>
+						<!-- <button {...updateList.fields.action.as('submit',['update', [ list.id, list.title, list.owner, list?.items ]])}>Update</button>
+						<button {...updateList.fields.update.as('submit',[list.id,list.title,list.owner,list?.items])}>Save</button> -->
+						<button {...deleteList.fields.delete.as('submit',[list.id, userId])}>DELETE</button>
 
+						<button id="updateList" onclick={(e)=>{console.log(list.id, list.title, list.owner, e, e.target.parentElement, e.target);updateListDialog?.showModal()}}>Edit List</button>
 
 						<div data-item={`list-${list.id}-items`} class="todo-items">
 						{#each list?.items as i}
@@ -62,86 +68,80 @@ const showModal = $state({value: false});
 
 		
 		<!-- see https://svelte.dev/tutorial/kit/other-handlers -->
-		<section class="list new">
-
-			<h1>New List</h1>
-
-{#if supportsPopover()}
-
-	<dialog id="editModal" bind:this={dialog} onclose={()=> (showModal.value=false)}>
-		<form {...createList} enctype="multipart/form-data">
-		<h2>Popover List Entry</h2>
-				<label>
-					<h2>Title</h2>
-					<input {...title.as('text')} />
-				</label>
-				<label>
-					Editable
-					<input {...editable.as('checkbox')} />
-				</label>
-				<label>
-					Owner
-					<input {...owner.as('number')} />
-				</label>
-				<label>
-					Created
-					<input {...created.as('text')} />
-				</label>
-				<label>
-					ID
-					<input {...id.as('number')} />
-				</label>
-				<label>
-					DBID
-					<input {...dbid.as('text')} />
-				</label>
-				<p>Items
+		<dialog id="createListModalDialog" bind:this={createListDialog} onclose={()=> (createListModal.value=false)}>
+			<form {...createList} enctype="multipart/form-data">
+			<h2>List Entry</h2>
 					<label>
-						Created
-						<input {...items[0].created.as('text')} />
-					</label>
-					<label>
-						DBID
-						<input {...items[0].dbid.as('text')} />
+						<h2>Title</h2>
+						<input {...title.as('text')} />
 					</label>
 					<label>
 						Editable
-						<input {...items[0].editable.as('checkbox')} />
+						<input {...editable.as('checkbox')} />
 					</label>
 					<label>
-						Flag
-						<input {...items[0].flag.as('number')} />
+						Owner
+						<input {...owner.as('number')} />
+					</label>
+					<label>
+						Created
+						<input {...created.as('text')} />
 					</label>
 					<label>
 						ID
-						<input {...items[0].id.as('number')} />
+						<input {...id.as('number')} />
 					</label>
 					<label>
-						Priority
-						<input {...items[0].priority.as('number')} />
+						DBID
+						<input {...dbid.as('text')} />
 					</label>
-					<label>
-						Sequence
-						<input {...items[0].sequence.as('number')} />
-					</label>
-					<label>
-						Status
-						<input {...items[0].status.as('number')} />
-					</label>
-					<label>
-						Description
-						<input {...items[0].text.as('text')} />
-					</label>
-				</p>
+					<p>Items
+						<label>
+							Created
+							<input {...items[0].created.as('text')} />
+						</label>
+						<label>
+							DBID
+							<input {...items[0].dbid.as('text')} />
+						</label>
+						<label>
+							Editable
+							<input {...items[0].editable.as('checkbox')} />
+						</label>
+						<label>
+							Flag
+							<input {...items[0].flag.as('number')} />
+						</label>
+						<label>
+							ID
+							<input {...items[0].id.as('number')} />
+						</label>
+						<label>
+							Priority
+							<input {...items[0].priority.as('number')} />
+						</label>
+						<label>
+							Sequence
+							<input {...items[0].sequence.as('number')} />
+						</label>
+						<label>
+							Status
+							<input {...items[0].status.as('number')} />
+						</label>
+						<label>
+							Description
+							<input {...items[0].text.as('text')} />
+						</label>
+					</p>
 
-				<button type="reset">Clear</button>
-				<button type="reset" onclick={()=>{dialog?.close(); showModal.value=false}}>Cancel</button>
-				<button type="submit" onclick={()=>{dialog?.close(); showModal.value=false}}>Save</button>
+					<button type="reset">Clear</button>
+					<button type="reset" onclick={()=>{createListDialog?.close(); createListModal.value=false}}>Cancel</button>
+					<button type="submit" onclick={()=>{createListDialog?.close(); createListModal.value=false}}>Save</button>
 			</form>
 		</dialog>
 
-{:else}
-		<form {...createList} enctype="multipart/form-data">
+		<dialog id="updateListModalDialog" bind:this={updateListDialog} onclose={()=> (updateListModal.value=false)}>
+			<form {...updateList} enctype="multipart/form-data">
 				<label>
 					<h2>Title</h2>
 					<input {...title.as('text')} />
@@ -206,10 +206,8 @@ const showModal = $state({value: false});
 				</p>
 				<button>Save</button>
 			</form>
-	{/if}			
-		</section>
+		</dialog>
 	{/if}
-
 </main>
 
 <style>
