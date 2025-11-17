@@ -1,36 +1,19 @@
 <script lang="ts">
 	// let { updateListModal = $bindable(), header, children } = $props();
-	let { list, updModal } = $props();
-	import { updateList } from "./data.remote";
-
-	let dialog: HTMLDialogElement = $state() as HTMLDialogElement; // HTMLDialogElement
-
-	$effect(() => {
-		if (updModal.get()) dialog.showModal();
-	});
-	console.log(list);
-	updateList.fields.id.set(list.id);
-	updateList.fields.title.set(list.title);
-	updateList.fields.owner.set(list.owner);
-	updateList.fields.editable.set(list.editable);
-
-	let { id, title, owner, editable } = updateList.fields;
+	let { data } = $props();
+	import { listUpdate } from "./data.remote";
+    console.log('bigevent:', data);
 </script>
-<dialog
-	bind:this={dialog}
-	onclose={() => (updModal.set(false))}
-	onclick={(e) => { if (e.target === dialog) dialog.close(); }}
->
-	<form {...updateList}>
+
+	<form {...listUpdate}>
 		<!-- {@render header?.()} -->
 		<hr />
 		<!-- {@render children?.()} -->
 		<hr />
 		<!-- svelte-ignore a11y_autofocus -->
-		 <input {...title.as('text')}>
-		<button onclick={() => dialog.close()}>Save & Close</button>
+		 <input {...listUpdate.fields.title.as('text')}>
+         <button>OK</button>
 	</form>
-</dialog>
 
 <style>
 	dialog {

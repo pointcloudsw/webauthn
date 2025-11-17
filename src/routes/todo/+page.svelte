@@ -1,10 +1,11 @@
 <script lang="ts">
-import { createList, updateList, getList, getLists, deleteList, listAction } from './data.remote';
-import EditListModal from './EditListModal.svelte';
+import { createList, getLists, deleteList, listUpdate, updateList } from './data.remote';
+import EditListModal from './EditListModalOther.svelte';
+import { boolState } from '$lib/state.svelte';
 
 let { data } = $props();
 let { userId, username } = data;
-
+let bigEvent = $state('');
 createList.fields.created.set((new Date()).toString());
 createList.fields.editable.set(true);
 createList.fields.owner.set(userId);
@@ -17,24 +18,23 @@ $effect(() => {
 	if (createListModal?.value) createListDialog.showModal();
 });
 
+const updModal = boolState();
+
 let updateListModal = $state({value: false});
 let updateListDialog: HTMLDialogElement = $state() as HTMLDialogElement; // HTMLDialogElement
 $effect(() => {
-	if (updateListModal?.value) updateListDialog.showModal();
+	if (updModal.get()) updateListDialog.showModal();
 });
 
+/*
 const editList = (e:any) => {
-	// e.target.parentElement.attributes.forEach( (a:any) => console.log(a));
 	
-	// let button = document.querySelector("button");
 	let listId = e.target.attributes['data-list_id']?.value;
 	let list = document.querySelector("div[data-list_id='"+listId+"']");
 	let dialogForm = document.querySelector("dialog > #updateListForm");
 	let dfInputs = dialogForm?.querySelectorAll("input");
 
 	list?.childNodes.forEach(n => { if ( n?.attributes?.length > 0 ) {
-		// n.attributes.entries().forEach( a => console.log(a) )
-		// n.attributes.item().forEach(i => console.log(i));
 		
 		if ( n.attributes.getNamedItem('data-list_id')?.value === listId ) {
 			console.log(listId);
@@ -43,15 +43,11 @@ const editList = (e:any) => {
 	}
 	});
 
-	// 		if (n?.attributes.toString().startsWith('data-') && n?.attributes['data-list_id'] === listId )
-	// 	console.log(n?.tagName, n?.attributes);
-	// });
 	let targetTitle = updateListDialog.querySelector("#updateListTitle");
 	targetTitle = e.target.parentElement.querySelector("#listTitle");
 	updateListDialog?.showModal();
-	// e.target.attributes.forEach((a:any) => console.log(a.value));
 }
-
+*/
 
 </script>
 
@@ -63,24 +59,46 @@ const editList = (e:any) => {
 
 <main>
 	{#if userId}
+
 		<section class="lists">
 			<h1>Todo Lists</h1>
 
-				<form {...deleteList} class="todo-list">
+				<div class="todo-list">
+					<dialog id="updateListDialog" oncommand={(e:any)=>bigEvent=e.source.dataset}>
+						<!-- <EditListModal {bigEvent} /> -->
+						<form {...listUpdate} id="updateListForm" name="updateListForm" >
+							<label for="owner">Owner: {bigEvent.owner}</label>
+							<label for="id">ID: {bigEvent.list_id}</label>
+							<!-- <input name="owner" type="readonly" value={bigEvent.owner} /> -->
+							<!-- </label> -->
+							<label for="created">Created: {bigEvent.created}</label>
+							<label for="modified">Modified: {bigEvent.created}</label>
+							<label for="editable">Editable:
+							<input name="editable" type="checkbox" value={bigEvent.editable} />
+							</label>
+							<label for="items">Items:
+							<input name="items" value={bigEvent.items} />
+							</label>
+							
+							<button>OK</button>
+						</form>
+					</dialog>
+					<form {...deleteList} name="deleteListForm" id="deleteListForm"></form>
+
 					{#each await getLists(userId) as list (list)}
 					<div data-list_id={list.id}>
 						<p data-list_id={list.id}>{list.id}</p>
 						<p data-list_title={list.title}>{list.title}</p>
 						<p data-list_owner={list.owner}>{list.owner}</p>
-						<!-- <button {...updateList.fields.action.as('submit',['update', [ list.id, list.title, list.owner, list?.items ]])}>Update</button>
-						<button {...updateList.fields.update.as('submit',[list.id,list.title,list.owner,list?.items])}>Save</button> -->
-						<button {...deleteList.fields.delete.as('submit',[list.id, userId])}>DELETE</button>
-						<!-- <button id="updateList" onclick={(e:any)=> {  /* updateListDialog?.showModal(); */ editList(e);}}>Edit List</button> -->
-						<!-- <button data-list_id={list.id} command="show-modal" commandfor="updateListModalDialog" value={list.id} type="button">Edit List</button> -->
-						<button data-list_id={list.id} onclick={()=>updateListModal.value = true}>Edit List</button>
-						{#if (updateListModal?.value === true) }
-						<EditListModal {list}/>
-						{/if}
+						<p data-list_owner={list.owner}>{list.owner}</p>
+
+						
+						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}">DELETE</button>
+						
+
+						<button type="submit" name="updateListFormButton" command="show-modal" commandfor="updateListDialog" data-list_id={list.id}  data-owner={userId} data-items={list.items}  data-editable={list.editable} data-created={list.created}>Edit List</button>
+
+
 						<div data-list_items={`list-${list.id}-items`} class="todo-items">
 						{#each list?.items as i}
 							<p data-list_item_id={i.id}>{i.id}</p>
@@ -94,7 +112,8 @@ const editList = (e:any) => {
 					<p>no records found</p>
 				{/each}
 
-					</form>
+					<!-- </form> -->
+				</div>
 		</section>
 
 		
@@ -173,6 +192,7 @@ const editList = (e:any) => {
 
 
 		<!-- <dialog id="updateListModalDialog"> -->
+		 <!--
 		<dialog bind:this={updateListDialog} onclose={()=> (updateListModal.value=false)}>
 			<form {...updateList} id="updateListForm" enctype="multipart/form-data">
 
@@ -240,11 +260,10 @@ const editList = (e:any) => {
 					</label>
 				</p>
 				<button>Save</button>
-				<!-- {/each} -->
 			</form>
 			<button commandfor="updateListModalDialog" command="request-close">Close</button>
 		</dialog>
-		
+	-->
 	{/if}
 </main>
 
@@ -258,6 +277,10 @@ main {
 	display: grid;
 	/* grid: 1fr 1fr / auto; */
 	/* grid: auto; */
+}
+form {
+	display: grid;
+	grid: auto / 1fr 1fr;
 }
 main .list.new {
 	background: slategrey;

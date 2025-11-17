@@ -3,7 +3,7 @@ import { json, text, redirect, type RemoteQueryFunction, type RemoteForm } from 
 import * as v from 'valibot';
 import { List, ListKey, type Item } from '$lib/types/list';
 import { form, query } from "$app/server";
-import { addList, delList,getListsByUser } from '$lib/server/database/db';
+import { addList, delList,getListsByUser, getListByListId } from '$lib/server/database/db';
 
 // import { getLocals } from '$lib/auth.remote';
 import { refreshAll } from '$app/navigation';
@@ -28,14 +28,14 @@ const list = v.object({
 	title: v.optional(v.string(), '')
 });
 // const listKey = v.object({ id: v.number(), owner: v.number()});
-
+/*
 export const getList = query( 'unchecked', async qryFltr => {
 	let [ listId, listOwner ] = qryFltr;
 
 	const lists = await getListByListId(listId, listOwner) as unknown as List[];
 	return lists;
 });
-
+*/
 
 export const createList=form(list, async data => {
 	let { created, dbid, editable, id, items, owner, title } = data;
@@ -54,11 +54,12 @@ export const createList=form(list, async data => {
 
 // let listKey: ListKey;
 export const deleteList=form('unchecked', async data => {
-	let result;
-// const listKey: ListKey = [ -1, -1 ];
-
-	if ( data.delete ){
-	let [ id, owner ] = data.delete.toString().split(',').map(e => Number(e));
+	// const listKey: ListKey = [ -1, -1 ];
+	console.log(data);
+	if ( data ) {
+		let result;
+		let [ owner, id ] : ListKey = data.deleteListFormButton.toString().split(',').map(v => Number(v));
+	// let [ id, owner ] = data.delete.toString().split(',').map(e => Number(e));
 	// let i = data.get('id') as number;
 	// console.log(data.id.split(','));
 	logger(`DATA: ${data}, OWNER: ${owner}, LISTID: ${id}`);
@@ -75,6 +76,7 @@ export const deleteList=form('unchecked', async data => {
 	}
 } catch(err) { throw err}
 	return result;
+	
 	}
 }
 );
@@ -87,7 +89,7 @@ export const updateList = form('unchecked', async data => {
 export const listUpdate=form('unchecked', async data => {
 	let result;
 // const listKey: ListKey = [ -1, -1 ];
-
+	console.log(data);
 	if ( data.update ){
 	let [ id, owner ] = data.update.toString().split(',').map(e => Number(e));
 	// let i = data.get('id') as number;
@@ -99,6 +101,7 @@ export const listUpdate=form('unchecked', async data => {
 		result = true;
 	let info = data.update.toString().split(','); 
 	logger(...info);
+	
 
 	// logger(`Result: ${result.toString()}`);
 	if ( result ){
@@ -114,14 +117,12 @@ export const listUpdate=form('unchecked', async data => {
 );
 
 // experimental
+/*
 export const listAction=form('unchecked', async data => {
 	let result;
-// const listKey: ListKey = [ -1, -1 ];
 
 	if ( data.action ){
 	let [ action, id, owner ] = data.update.toString().split(',').map(e => Number(e));
-	// let i = data.get('id') as number;
-	// console.log(data.id.split(','));
 	logger(`DATA: ${data}, OWNER: ${owner}, LISTID: ${id}`);
 	if ( id && owner ) {
 
@@ -133,13 +134,11 @@ export const listAction=form('unchecked', async data => {
 			console.log(action);
 	}
 	try {
-		// result = await delList({id, owner});
 		result = true;
 	let info = data.action.toString().split(','); 
 	logger(...info);
 	console.log(data.action);
 
-	// logger(`Result: ${result.toString()}`);
 	if ( result ){
 		logger(`Refreshing...`);
 		await getLists(owner).refresh();
@@ -152,7 +151,7 @@ export const listAction=form('unchecked', async data => {
 	}
  }
 );
-
+*/
 
 
 // const modifyList = form( async ({}) => {});

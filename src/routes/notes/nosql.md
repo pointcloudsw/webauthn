@@ -64,3 +64,20 @@ c = db.getCollection('collection');
     }}
 )();
 ```
+
+### Add records populated with randomonly generated data
+```js
+c = db.getCollection('todo_lists');
+// Codepoint Boundaries
+const gr = (min,max) => { return Math.trunc(Math.random() * (max - min) + min) };
+
+// Charcters within the codepoint boundaries
+const rs = (i,min,max) => { let str = ''; while ( --i > 0 ) str += String.fromCodePoint(Number(gr(min,max))); return str;};
+
+// Add records function
+const addRecs = (owner, startId, count) => { let rec; let i = 0; while ( i++ < count ) { rec = { "id": startId++, "dbid": "", "owner": owner, "title": rs(12,32,125), "created": new Date(), "editable": true, "items": [ { "text": rs(24,32,125), "editable": true, "created": new Date() }] }; c.add(rec).execute(); }};
+
+// Add records
+addRecs(1,20,20);
+
+```
