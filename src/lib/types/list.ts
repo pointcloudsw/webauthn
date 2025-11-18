@@ -61,3 +61,10 @@ export type ListKey = v.InferOutput<typeof ListKey>;
 //     owner?: string | undefined;
 //     title?: string | undefined;
 // }
+// const DomDataSet = new DOMStringMap();
+
+// export const SourceEventData = v.object({
+//   dataset: DomDataSet,
+//   list: List
+// });
+// export type SourceEventData = v.InferOutput<typeof SourceEventData>;

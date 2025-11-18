@@ -9,14 +9,25 @@ import { createList, getLists, deleteList, listUpdate, updateList } from './data
 let { data } = $props();
 let { userId, username } = data;
 // let btnEvtData = $state('');
-const btnEvtData = $state({
-	dataset: {},
-	owner: '',
-	id: '',
-	editable: false,
-	created: '',
-	items: []
-});
+
+// type EventDataSetItem = {
+// 	id: Number | String,
+// 	created: Number | String | Date,
+// 	editable: Boolean | Number | String,
+// 	text: String,
+// };
+
+type EventDataSet = {
+	// dataset: DOMStringMap,
+	id: Number | string,
+	owner: Number | string,
+	created: Number | string | Date,
+	editable: Boolean | Number | string,
+	items: string;
+};
+// let btnEvtData: EventDataSet = $state() as EventDataSet;
+let domEvtStrMap: DOMStringMap = $state() as DOMStringMap;
+let btnEvtData: EventDataSet = $state({id: ''}) as EventDataSet;
 
 createList.fields.created.set((new Date()).toString());
 createList.fields.editable.set(true);
@@ -31,10 +42,25 @@ $effect(() => {
 });
 const updateListModalState = $state({value: false});
 let updateListDialog: HTMLDialogElement = $state() as HTMLDialogElement; // HTMLDialogElement
+$effect(()=>{
+			if ( domEvtStrMap ) {
+			// console.log(domEvtStrMap);
+			// console.log(domEvtStrMap['list_id']);
+			btnEvtData.id = domEvtStrMap['list_id'] || '';
+			btnEvtData.owner = domEvtStrMap['owner'] || '';
+			btnEvtData.created = domEvtStrMap['created'] || '';
+			btnEvtData.editable = domEvtStrMap['editable'] || '';
+			btnEvtData.items = domEvtStrMap['items'] || '';
+			// console.log(btnEvtData);
+		}
+});
 $effect(() => {
 	if ( updateListModalState?.value === true ) {
-		
-		btnEvtData.id = btnEvtData.dataset['list_id']; btnEvtData.owner = btnEvtData.dataset['owner']; btnEvtData.created = btnEvtData.dataset['created']; btnEvtData.editable = btnEvtData.dataset['editable'];  btnEvtData.items = btnEvtData.dataset['items'];
+		// if ( btnEvtData?.dataset?.length ) {
+		// 	btnEvtData.id = btnEvtData?.dataset['list_id'] || '';
+		// 	btnEvtData.owner = btnEvtData?.dataset['owner'] || '';
+		// 	btnEvtData.created = btnEvtData?.dataset['created'] || ''; btnEvtData.editable = btnEvtData?.dataset['editable'] || '';  btnEvtData.items = btnEvtData?.dataset['items'] || '';
+		// }
 
 		updateListDialog?.showModal();
 	} else {
@@ -87,8 +113,8 @@ const editList = (e:any) => {
 					<dialog id="updateListDialog" bind:this={updateListDialog} onsubmit={(e:any)=>{updateListModalState.value=false}}>
 
 						<form {...listUpdate} id="updateListForm" name="updateListForm">
-							<label for="owner">Owner: {btnEvtData.owner || ''}</label>
-							<label for="id">ID: {btnEvtData.id || ''}</label>
+							<label for="owner">Owner: {btnEvtData?.owner || ''}</label>
+							<label for="id">ID: {btnEvtData?.id || ''}</label>
 							<label for="created">Created: {btnEvtData?.created || ''}</label>
 							<label for="modified">Modified: {btnEvtData?.created || ''}</label>
 							<label for="editable">Editable:
@@ -98,7 +124,7 @@ const editList = (e:any) => {
 							<!-- <label for="items">Items:</label> -->
 							<input name="items" type="readonly" value={btnEvtData?.items || ''} />
 							<h3>Items:</h3>
-							{#if btnEvtData?.items.length}
+							{#if btnEvtData?.items}
 								<h3>Item Type: {typeof btnEvtData.items}</h3>
 							 {#each JSON.parse(btnEvtData?.items) as i}
 								<p>{i}</p>
@@ -137,7 +163,7 @@ const editList = (e:any) => {
 						<!-- <button type="button" name="updateListFormButton" command="show-modal" commandfor="updateListDialog" data-list_id={list.id}  data-owner={userId} data-items={list.items}  data-editable={list.editable} data-created={list.created}>Edit List</button> -->
 						<!-- <button name="updateListFormButton" form="updateListForm" data-list_id={list.id}  data-owner={userId} data-items={list.items}  data-editable={list.editable} data-created={list.created}>Edit List</button> -->
 						<!-- <button name="updateListFormButton" onclick={(e:any)=>{updateListModalState.value = true; btnEvtData.dataset = e.target.dataset; btnEvtData.id = e.target.dataset['list_id']; btnEvtData.owner = e.target.dataset['owner']; btnEvtData.created = e.target.dataset['created']; btnEvtData.editable = e.target.dataset['editable']; btnEvtData.items = e.target.dataset['items'];}} data-list_id={list.id}  data-owner={userId} data-items={JSON.stringify(list?.items)}  data-editable={list.editable} data-created={list.created}>Edit List</button> -->
-						<button name="updateListFormButton" onclick={(e:any)=>{updateListModalState.value = true; btnEvtData.dataset = e.target.dataset; /* btnEvtData.id = e.target.dataset['list_id']; btnEvtData.owner = e.target.dataset['owner']; btnEvtData.created = e.target.dataset['created']; btnEvtData.editable = e.target.dataset['editable']; btnEvtData.items = e.target.dataset['items']; */}} data-list_id={list.id}  data-owner={userId} data-items={JSON.stringify(list?.items)}  data-editable={list.editable} data-created={list.created}>Edit List</button>
+						<button name="updateListFormButton" onclick={(e:any)=>{updateListModalState.value = true; domEvtStrMap = e.target.dataset; console.log(domEvtStrMap);/* btnEvtData.id = e.target.dataset['list_id']; btnEvtData.owner = e.target.dataset['owner']; btnEvtData.created = e.target.dataset['created']; btnEvtData.editable = e.target.dataset['editable']; btnEvtData.items = e.target.dataset['items']; */}} data-list_id={list.id}  data-owner={userId} data-items={JSON.stringify(list?.items)}  data-editable={list.editable} data-created={list.created}>Edit List</button>
 
 
 						<div data-list_items={`list-${list.id}-items`} class="todo-items">
