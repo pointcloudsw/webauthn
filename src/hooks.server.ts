@@ -11,6 +11,8 @@ import { logger } from "$lib/exports";
 const bucket = new RefillingTokenBucket<string>(100, 1);
 
 const rateLimitHandle: Handle = async ({ event, resolve }) => {
+	logger(`ROUTEID: ${event.route?.id}, REFERRER: ${event.request?.referrer}, eURL: ${event.url}, rURL: ${event.request.url}, METHOD: ${event?.request?.method}, SOURCEIP: ${event?.getClientAddress()}`);
+
 	// Note: Assumes X-Forwarded-For will always be defined.
 	const clientIP = event.request.headers.get("X-Forwarded-For");
 	if (clientIP === null) {
@@ -40,7 +42,7 @@ const authHandle: Handle = async ({ event, resolve }) => {
 	// Validate session state
 	const { session, user } = token ? validateSessionToken(token) : { session: null, user: null };
 
-	logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, METHOD: ${event?.request?.method}`);
+	logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, METHOD: ${event?.request?.method}, SOURCEIP: ${event?.getClientAddress()}`);
 
 	// If session is valid, refresh cookie
 	if ( (token && session && user) ) {
@@ -70,7 +72,7 @@ const redirectHandle: Handle = async ({ event, resolve }) => {
 	const { request, route, url } = event;
 	const { session, user } = event.locals;
 
-	logger(`USERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}, METHOD: ${event?.request?.method}`);
+	logger(`USERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}, METHOD: ${event?.request?.method}, SOURCEIP: ${event?.getClientAddress()}`);
 
 
 	if ( !( session && user ) )

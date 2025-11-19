@@ -42,11 +42,18 @@ $effect(() => {
 });
 const updateListModalState = $state({value: false});
 let updateListDialog: HTMLDialogElement = $state() as HTMLDialogElement; // HTMLDialogElement
+let doc: NodeList;
+let qrySelector = '';
 $effect(()=>{
 			if ( domEvtStrMap ) {
 			// console.log(domEvtStrMap);
 			// console.log(domEvtStrMap['list_id']);
 			btnEvtData.id = domEvtStrMap['list_id'] || '';
+			qrySelector = `div[data-list_id='${btnEvtData.id}'] p`;
+			doc = document.querySelectorAll(qrySelector);
+			qrySelector = `div[data-list_id='${btnEvtData.id}'] > div[data-list_items] p`;
+			doc = document.querySelectorAll(qrySelector);
+			console.log(doc);
 			btnEvtData.owner = domEvtStrMap['owner'] || '';
 			btnEvtData.created = domEvtStrMap['created'] || '';
 			btnEvtData.editable = domEvtStrMap['editable'] || '';
