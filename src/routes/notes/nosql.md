@@ -79,5 +79,18 @@ const addRecs = (owner, startId, count) => { let rec; let i = 0; while ( i++ < c
 
 // Add records
 addRecs(1,20,20);
-
 ```
+
+### Add item data to each document
+```js
+c = db.getCollection('todo_lists');
+// Codepoint Boundaries
+const gr = (min,max) => { return Math.trunc(Math.random() * (max - min) + min) };
+
+// Charcters within the codepoint boundaries
+const rs = (i,min,max) => { let str = ''; while ( --i > 0 ) str += String.fromCodePoint(Number(gr(min,max))); return str;};
+
+// Add items function
+const addItems = async () => { try { let doc, rec; let counter = 1; const res = await c.find().execute(); while ( (doc = res.fetchOne()) ) { rec = [ { "id": counter++, "text": rs(24,32,125), "editable": true, "created": new Date() }, { "id": counter++, "text": rs(24,32,125), "editable": true, "created": new Date() }, { "id": counter++, "text": rs(24,32,125), "editable": true, "created": new Date() } ]; await c.modify('_id = :id').set('items', rec).bind('id',doc._id).execute(); counter = 1; }} catch (e) { console.error('Error during update:', e); }};
+addItems();
+
