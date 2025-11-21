@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { createList, getLists, deleteList, listUpdate, updateList } from "./data.remote";
-	import * as v from 'valibot';
+	import { createList, getLists, deleteList, listUpdate } from "./data.remote";
+	// import * as v from 'valibot';
 
 	let { data } = $props();
 	let { userId, username } = data;

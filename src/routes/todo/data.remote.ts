@@ -3,7 +3,7 @@ import { json, text, redirect, type RemoteQueryFunction, type RemoteForm } from 
 import * as v from 'valibot';
 import { List, ListKey, type Item } from '$lib/types/list';
 import { form, query } from "$app/server";
-import { addList, delList,getListsByUser, getListByListId } from '$lib/server/database/db';
+import { addList, delList,getListsByUser, getListByListId,editList } from '$lib/server/database/db';
 
 // import { getLocals } from '$lib/auth.remote';
 import { refreshAll } from '$app/navigation';
@@ -81,27 +81,43 @@ export const deleteList=form('unchecked', async data => {
 }
 );
 
-export const updateList = form('unchecked', async data => {
-
-});
-
 // experimental
 export const listUpdate=form('unchecked', async data => {
 	let result;
+	const list: List = { editable: false };
+	list.id = undefined;
+	list.created = undefined;
+	list.owner = undefined;
+	list.title = undefined;
+	// list.items = undefined;
 // const listKey: ListKey = [ -1, -1 ];
+
+// TODO:  use context and/or cookie/session, database ID / listId and userID to validate and confirm that submitter is authorized to update the record 
+
+
 	console.log(data);
-	if ( data.update ){
+	// if ( data.update ){
+	if ( data ){
+
+
 	// let [ id, owner ] = data.update.toString().split(',').map(e => Number(e));
 	// let i = data.get('id') as number;
 	// console.log(data.id.split(','));
 	logger(`DATA: ${data}, OWNER: ${data.owner}, LISTID: ${data.id}`);
 	if ( data.id && data.owner )
 	try {	
+		let { id, created, editable, owner, title } = data;
+		list.id = Number(id);
+		list.created = String(created);
+		list.editable = Boolean(editable);
+		list.owner = Number(owner);
+		list.title = String(title);
+		// list.items = items;
 		// result = await delList({id, owner});
-		result = true;
-		let info = data.update.toString().split(','); 
-		logger(...info);
-		// result = await updateList(data);
+		// result = true;
+		// let info = data.update.toString().split(','); 
+		// logger(...info);
+		result = await editList(list);
 	
 
 	// logger(`Result: ${result.toString()}`);

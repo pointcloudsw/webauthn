@@ -103,7 +103,7 @@ export async function addList(list: List) : Promise<string[]> {
     return result;
 }
 
-export async function updateList(list: List) : Promise<int64> {
+export async function editList(list: List) : Promise<int64> {
     let result : int64;
     let coll : Collection;
 
@@ -150,11 +150,6 @@ export async function delList(list: {id:number,owner:number}) : Promise<int64> {
         }
     );
     return result;
-}
-
-
-export async function editList(){
-
 }
 
 export async function editListItem(){
