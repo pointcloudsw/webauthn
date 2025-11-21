@@ -96,7 +96,7 @@ export const listUpdate=form('unchecked', async data => {
 	// console.log(data.id.split(','));
 	logger(`DATA: ${data}, OWNER: ${owner}, LISTID: ${id}`);
 	// if ( id && owner )
-	try {
+	try {	
 		// result = await delList({id, owner});
 		result = true;
 	let info = data.update.toString().split(','); 

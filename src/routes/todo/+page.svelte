@@ -178,9 +178,13 @@ function populateListModal(listId:number){
 				<label for="owner">Owner: {btnEvtData.owner}</label>
 				<label for="created">Created: {btnEvtData?.created || ""}</label>
 				<label for="modified">Modified: {btnEvtData?.created || ""}</label>
+				<label for="title"
+					>Title:
+					<input {...title.as('text')} name="title" type="text" value={btnEvtData?.title || '' } />
+				</label>
 				<label for="editable"
 					>Editable:
-					<input {...editable} name="editable" type="checkbox" value={btnEvtData?.editable || false} />
+					<input {...editable.as('checkbox')} name="editable" type="checkbox" value={btnEvtData?.editable || false} />
 				</label>
 				<section>
 					<!-- <label for="items">Items:</label> -->
@@ -194,15 +198,15 @@ function populateListModal(listId:number){
 						{#each btnEvtData?.items as i}
 							{console.log(i)}
 							<p>{console.log(i)}</p>
-							<label for="item_id">ID:</label>
-							<input name="item_id" type="readonly" value={i.id || ''} />
-							<label for="item_created">Created:</label>
-							<input name="item_created" type="readonly" value={i.created || ''} />
-							<!-- <label for="item_txt">Todo:</label> -->
-							<!-- <input {...i?.text} name="item_txt" type="textbox" value={i.text || ''} /> -->
-							<label for="item_editable">Editable:</label>
+							<label for="item_id_{i?.id}">ID:</label>
+							<input name="item_id_{i?.id}" type="readonly" value={i.id || ''} />
+							<label for="item_created_{i?.id}">Created:</label>
+							<input name="item_created_{i?.id}" type="readonly" value={i.created || ''} />
+							<label for="item_txt_{i?.id}">Todo:</label>
+							<input {...items[0].text.as('text')} name="item_txt_{i?.id}" type="textbox" value={i.text || ''} />
+							<label for="item_editable_{i?.id}">Editable:</label>
 							<!-- <input {...i?.editable} name="item_editable" type="checkbox" value={i.editable || ''} /> -->
-							<input {...items[0].editable?.as('checkbox')} name="item_editable" type="text" />
+							<input {...items[0].editable?.as('checkbox')} name="item_editable_{i?.id}" type="text" />
 						{/each}
 					{/if}
 				</section>
