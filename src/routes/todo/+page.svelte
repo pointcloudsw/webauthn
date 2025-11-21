@@ -181,7 +181,16 @@ function populateListModal(listId:number){
 				})
 		}
 	}
+	console.log('Raw Event Data:');
 	console.log(btnEvtData);
+	console.log('Json Event Data:');
+	console.log(JSON.stringify(btnEvtData));
+}
+
+function restoreUpdateFormStaticValues(docForms:HTMLCollectionOf<HTMLFormElement>){
+	document.forms['updateListForm' as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;
+	console.log(document.forms['updateListForm' as any].elements);
+	document.forms['updateListForm' as any].childNodes.forEach( c => console.log(c));
 }
 </script>
 
@@ -309,7 +318,7 @@ function populateListModal(listId:number){
 			<form {...listUpdate} id="updateListForm" name="updateListForm">
 				<label for="id">ID: {btnEvtData?.id || ""}</label>
 				<!-- <input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} />				 --> 
-				<input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} />				
+				<input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} />
 				<!-- <input {...id.as(['hidden', btnEvtData.id])} name="id" type="hidden" value={btnEvtData.id} />				 -->
 				 <!-- {@debug listUpdate} -->
 				<!-- <input {...id.as(btnEvtData.id) } name="id" type="hidden" />				 -->
@@ -318,6 +327,7 @@ function populateListModal(listId:number){
 				<!-- <input {...owner.value()} name="owner" type="hidden" value={btnEvtData?.owner} /> -->
 				<!-- <input {...listUpdate.fields.owner.set(btnEvtData.owner as number)} name="owner" type="hidden" />				 -->
 				<label for="created">Created: {btnEvtData?.created || ""}</label>
+				<input {...created.as('text')} name="created" type="hidden" value={btnEvtData?.created} />
 				<label for="modified">Modified: {btnEvtData?.created || ""}</label>
 				<label for="title"
 					>Title:
@@ -336,18 +346,20 @@ function populateListModal(listId:number){
 						<h3>Item Type: {typeof btnEvtData.items}</h3>
 						<h3>Item Count: {btnEvtData.items.length}</h3>
 						{console.log(btnEvtData.items)}
-						{#each btnEvtData?.items as i}
+						{#each btnEvtData?.items as i, iidx}
 							{console.log(i)}
 							<p>{console.log(i)}</p>
-							<label for="item_id_{i?.id}">ID:</label>
-							<input name="item_id_{i?.id}" type="readonly" value={i.id || ''} />
-							<label for="item_created_{i?.id}">Created:</label>
-							<input name="item_created_{i?.id}" type="readonly" value={i.created || ''} />
+							<label for="id_{i?.id}">ID: {i?.id}</label>
+							<!-- <input name="item_id_{i?.id}" type="readonly" value={i.id || ''} /> -->
+							<input {...items[iidx].id.as('number')} name="id_{i?.id}" type="hidden" value={i?.id} />
+
+							<label for="created_{i?.id}">Created: {i?.created}</label>
+							<input {...items[iidx].created.as('text')} name="created_{i?.id}" type="hidden" value={i?.created || ''} />
 							<label for="item_txt_{i?.id}">Todo:</label>
-							<input {...items[0].text.as('text')} name="item_txt_{i?.id}" type="textbox" value={i.text || ''} />
+							<input {...items[iidx].text.as('text')} name="item_txt_{i?.id}" type="textarea" value={i.text || ''} />
 							<label for="item_editable_{i?.id}">Editable:</label>
 							<!-- <input {...i?.editable} name="item_editable" type="checkbox" value={i.editable || ''} /> -->
-							<input {...items[0].editable?.as('checkbox')} name="item_editable_{i?.id}" type="text" />
+							<input {...items[iidx].editable?.as('checkbox')} name="item_editable_{i?.id}" type="text" />
 						{/each}
 					{/if}
 				</section>
@@ -357,7 +369,9 @@ function populateListModal(listId:number){
 				-->
 				<!-- <button>OK</button> -->
 				<!-- <button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].nodeValue = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].nodeValue = btnEvtData.owner as string}}>OK</button> -->
-				<button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;}}>OK</button>
+				 <!-- TODO:  In the meantime, move these cleanups to their own function where static values from both the main form and from the individual form items can be saved back to the form -->
+				<!-- <button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;}}>OK</button> -->
+				<button onclick={()=>{restoreUpdateFormStaticValues(document.forms)}}>OK</button>
 			</form>
 		</dialog>
 		<form {...deleteList} name="deleteListForm" id="deleteListForm"></form>
@@ -575,7 +589,14 @@ function populateListModal(listId:number){
 	}
 	form {
 		display: grid;
+	}
+	form > *:not(button){
 		grid: auto / 1fr 1fr;
+	}
+	form > button {
+		/* gap: 1rem 0rem 0rem 0rem; */
+		margin: 1rem 0rem;
+		padding: 0.51rem 0rem;
 	}
 	main .list.new {
 		background: slategrey;
