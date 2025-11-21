@@ -91,22 +91,23 @@ export const listUpdate=form('unchecked', async data => {
 // const listKey: ListKey = [ -1, -1 ];
 	console.log(data);
 	if ( data.update ){
-	let [ id, owner ] = data.update.toString().split(',').map(e => Number(e));
+	// let [ id, owner ] = data.update.toString().split(',').map(e => Number(e));
 	// let i = data.get('id') as number;
 	// console.log(data.id.split(','));
-	logger(`DATA: ${data}, OWNER: ${owner}, LISTID: ${id}`);
-	// if ( id && owner )
+	logger(`DATA: ${data}, OWNER: ${data.owner}, LISTID: ${data.id}`);
+	if ( data.id && data.owner )
 	try {	
 		// result = await delList({id, owner});
 		result = true;
-	let info = data.update.toString().split(','); 
-	logger(...info);
+		let info = data.update.toString().split(','); 
+		logger(...info);
+		// result = await updateList(data);
 	
 
 	// logger(`Result: ${result.toString()}`);
 	if ( result ){
 		logger(`Refreshing...`);
-		await getLists(owner).refresh();
+		// await getLists(owner).refresh();
 		logger(`Done.`);
 
 	}

@@ -1,37 +1,63 @@
 <script lang="ts">
 	import { createList, getLists, deleteList, listUpdate, updateList } from "./data.remote";
+	import * as v from 'valibot';
 
-	// import { DOMAttributes } from 'svelte/elements';
-
-	// let dialogCmd = new EventTarget();
-	// dialogCmd.addEventListener('oncommand', ()=>)
 	let { data } = $props();
 	let { userId, username } = data;
-	// let btnEvtData = $state('');
+
+	type ID = number | string | undefined;
+	type DT = number | string | Date | undefined;
+	type BL = boolean | number | string | undefined;
+	type TXT = string | undefined;
 
 	type EventDataSetItem = {
-		id: Number | String | undefined,
-		created: Number | String | Date | undefined,
-		editable: Boolean | Number | String | undefined,
-		text: String | undefined
+		id: ID;
+		created: DT;
+		editable: BL;
+		text: TXT;
 	};
-
 	type EventDataSet = {
 		// dataset: DOMStringMap,
-		id: Number | string | undefined;
-		title: string | undefined;
-		owner: Number | string | undefined;
-		created: Number | string | Date | undefined;
-		editable: Boolean | Number | string | undefined;
+		id: ID;
+		title: TXT;
+		owner: ID;
+		created: DT;
+		editable: BL;
 		items: EventDataSetItem[] | undefined;
 	};
+
 	let domEvtStrMap: DOMStringMap = $state() as DOMStringMap;
-	// let evtDataSetItem: EventDataSetItem = { id: -1, created: '', editable: false, text: '' };// = $state({ id: -1}) as EventDataSetItem;
+	// let evtDataSetItem: EventDataSetItem = $state({}) as EventDataSetItem;
+	// const evtDataSetItem: EventDataSetItem = {
+	// 	id: undefined,
+	// 	created: undefined,
+	// 	editable: undefined,
+	// 	text: undefined
+	// };
+	let evtDataSetItem: EventDataSetItem = $state({
+		id: undefined,
+		created: undefined,
+		editable: undefined,
+		text: undefined
+	});
 
-	// let btnEvtData: EventDataSet = { id: -1, created: '', editable: false, owner: -1, title: '', items: [] };//$state({ id: "" }) as EventDataSet;
-	let evtDataSetItem: EventDataSetItem = $state({}) as EventDataSetItem;// = $state({ id: -1}) as EventDataSetItem;
-
-	let btnEvtData: EventDataSet = $state({}) as EventDataSet;
+	// let btnEvtData: EventDataSet = $state({}) as EventDataSet;
+	// const btnEvtData: EventDataSet = {
+	// 	id: undefined,
+	// 	created: undefined,
+	// 	editable: undefined,
+	// 	owner: undefined,
+	// 	title: undefined,
+	// 	items: [ evtDataSetItem ]
+	// };
+	let btnEvtData: EventDataSet = $state({
+		id: undefined,
+		created: undefined,
+		editable: undefined,
+		owner: undefined,
+		title: undefined,
+		items: [ evtDataSetItem ]
+	});
 
 	createList.fields.created.set(new Date().toString());
 	createList.fields.editable.set(true);
@@ -40,7 +66,7 @@
 	const { created, dbid, editable, id, items, owner, title } = createList.fields;
 
 	const createListModal = $state({ value: false });
-	let createListDialog: HTMLDialogElement = $state() as HTMLDialogElement; // HTMLDialogElement
+	let createListDialog: HTMLDialogElement = $state() as HTMLDialogElement;
 	$effect(() => {
 		if (createListModal?.value) createListDialog.showModal();
 	});
@@ -49,8 +75,7 @@
 	let list: HTMLElement | null;
 	let listItems: HTMLElement | null;
 	let qS = "";
-	// let listId = -1;
-	let listId: number = $state(-1);
+	// let listId: number = $state(-1);
 	let listItem = "";
 	let idx = '';
 
@@ -63,13 +88,13 @@
 			updateListDialog?.close();
 		}
 	});
-	$effect(()=>{$inspect(btnEvtData);});
+	// $effect(()=>{$inspect(btnEvtData);});
 
 // TODO: find a better solution to populating the list edit modal, that still adheres to the page as data source principle
 function populateListModal(listId:number){
-	console.log(`\n\nPopulating List Modal\n\nButton Event Data:\n`);
+	console.log(`\n\nPopulating List Modal\n\nButton Event Data with data from List #:${listId}\n`);
 	
-	if ( btnEvtData.id ) {
+	if ( btnEvtData ) {
 	console.log(`\n\nClearing Button Event Data\n\n`);
 		btnEvtData.id = undefined;
 		btnEvtData.created = undefined;
@@ -111,6 +136,7 @@ function populateListModal(listId:number){
 			btnEvtData.title = list?.querySelector(`[data-list_title]`)?.textContent;
 
 			listItems = list?.querySelector(`[data-list-items]`);
+			console.log(listItems);
 
 			// TODO: renovate this entire construct, starting with how we're instantiation evtDataSetItem (currently instantiated by setting invalid base values to the object; but also including how we're having to cycle through all elements regardless of if they contain valid dataset attribute types.  One idea would be to limit the list item query to search for those with a new data attribute such as data-type=list-item
 			if ( listItems?.childElementCount )
@@ -142,18 +168,116 @@ function populateListModal(listId:number){
 
 					// TODO:  The renovation todo at the top of this construct also applies to the statements below
 					btnEvtData.items = btnEvtData.items || [];
-					if ( evtDataSetItem.id != -1 && btnEvtData.items[btnEvtData.items.length-1]?.id != evtDataSetItem.id)
+					if ( evtDataSetItem?.id && evtDataSetItem.id != -1 && btnEvtData.items[btnEvtData.items.length-1]?.id != evtDataSetItem.id)
 						btnEvtData.items.push({ ...evtDataSetItem })
 					// btnEvtData.items.push(evtDataSetItem);
 					console.log('Event Data Items:');
 					console.log(btnEvtData.items);
+					evtDataSetItem.id = undefined;
+					evtDataSetItem.created = undefined;
+					evtDataSetItem.editable = undefined;
+					evtDataSetItem.text = undefined;
 
 				})
 		}
 	}
+	console.log(btnEvtData);
 }
-
 </script>
+
+
+ <!--
+// Got it — you want a SvelteKit + Valibot example where dynamic fields are validated in real-time on the client before submission.
+// Here’s a concise, working pattern you can adapt.
+
+// Example: Real-time Validation of Dynamic Fields with Valibot in SvelteKit
+// Svelte<script lang="ts">
+// 	import { writable, derived } from 'svelte/store';
+// 	import { object, string, minLength, email, parse } from 'valibot';
+
+// 	// Dynamic form fields store
+// 	const fields = writable([
+// 		{ name: 'email', value: '' },
+// 		{ name: 'username', value: '' }
+// 	]);
+
+// 	// Valibot schema
+// 	const schema = object({
+// 		email: string([email('Invalid email format')]),
+// 		username: string([minLength(3, 'Username must be at least 3 characters')])
+// 	});
+
+// 	// Errors store
+// 	const errors = writable<Record<string, string>>({});
+
+// 	// Validate whenever fields change
+// 	fields.subscribe(($fields) => {
+// 		const data = Object.fromEntries($fields.map(f => [f.name, f.value]));
+// 		try {
+// 			parse(schema, data);
+// 			errors.set({});
+// 		} catch (err: any) {
+// 			const errMap: Record<string, string> = {};
+// 			err.issues?.forEach((issue: any) => {
+// 				errMap[issue.path[0]] = issue.message;
+// 			});
+// 			errors.set(errMap);
+// 		}
+// 	});
+
+// 	// Derived store to check if form is valid
+// 	const isValid = derived(errors, $errors => Object.keys($errors).length === 0);
+
+// 	function updateField(index: number, value: string) {
+// 		fields.update(f => {
+// 			f[index].value = value;
+// 			return [...f];
+// 		});
+// 	}
+
+// 	function submitForm() {
+// 		if ($isValid) {
+// 			alert('Form submitted!');
+// 		}
+// 	}
+// </script>
+
+// <form on:submit|preventDefault={submitForm}>
+// 	{#each $fields as field, i}
+// 		<div>
+// 			<label>{field.name}</label>
+// 			<input
+// 				type="text"
+// 				bind:value={field.value}
+// 				on:input={(e) => updateField(i, e.target.value)}
+// 			/>
+// 			{#if $errors[field.name]}
+// 				<p class="error">{$errors[field.name]}</p>
+// 			{/if}
+// 		</div>
+// 	{/each}
+
+// 	<button type="submit" disabled={!$isValid}>Submit</button>
+// </form>
+
+// <style>
+// 	.error { color: red; font-size: 0.9em; }
+// </style>
+
+
+// How it works:
+
+// fields store holds dynamic form fields (could be generated from API or user input).
+// Valibot schema defines validation rules.
+// fields.subscribe runs validation on every change, updating errors in real-time.
+// isValid derived store enables/disables the submit button.
+// No server round-trip — all validation happens client-side before submission.
+
+
+// If you want, I can extend this so new fields can be added dynamically and still be validated instantly. That would make it perfect for forms where users can add/remove inputs on the fly.
+// Do you want me to extend it that way?
+  -->
+
 
 <header>
 	<button id="newList" onclick={() => createListDialog?.showModal()}>New List</button>
@@ -161,21 +285,38 @@ function populateListModal(listId:number){
 
 <main>
 	{#if userId}
-		<dialog id="updateListDialog"
+		<!-- <dialog id="updateListDialog"
 			bind:this={updateListDialog}
-			onbeforetoggle={(e:any)=>{
+			onbeforetoggle={(e:any)=>{ 
 				if ( e.newState === 'open' ) populateListModal(listId) as undefined}}
 			onclose={()=>{
 				if ( updateListModalState.value === true )
 					updateListModalState.value = false;
 				console.log('Closing dialog and completing submission')
 			}}
-			onsubmit={() => {updateListModalState.value = false}}
+			onsubmit={() => {updateListModalState.value = false;}}
+		> -->
+		<dialog id="updateListDialog"
+			bind:this={updateListDialog}
+			onclose={()=>{
+				if ( updateListModalState.value === true )
+					updateListModalState.value = false;
+				console.log('Closing dialog and completing submission')
+			}}
+			onsubmit={() => {updateListModalState.value = false;}}
 		>
-			<p>{btnEvtData.id}</p>
+			<p>{btnEvtData?.title ?? "No Title Found"}</p>
 			<form {...listUpdate} id="updateListForm" name="updateListForm">
 				<label for="id">ID: {btnEvtData?.id || ""}</label>
+				<!-- <input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} />				 --> 
+				<input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} />				
+				<!-- <input {...id.as(['hidden', btnEvtData.id])} name="id" type="hidden" value={btnEvtData.id} />				 -->
+				 <!-- {@debug listUpdate} -->
+				<!-- <input {...id.as(btnEvtData.id) } name="id" type="hidden" />				 -->
 				<label for="owner">Owner: {btnEvtData.owner}</label>
+				<input {...owner.as('number')} name="owner" type="hidden" value={btnEvtData?.owner} />
+				<!-- <input {...owner.value()} name="owner" type="hidden" value={btnEvtData?.owner} /> -->
+				<!-- <input {...listUpdate.fields.owner.set(btnEvtData.owner as number)} name="owner" type="hidden" />				 -->
 				<label for="created">Created: {btnEvtData?.created || ""}</label>
 				<label for="modified">Modified: {btnEvtData?.created || ""}</label>
 				<label for="title"
@@ -211,7 +352,12 @@ function populateListModal(listId:number){
 					{/if}
 				</section>
 				<!-- <button onclick={()=>updateListModalState.value = false && this.close()}>OK</button> -->
-				<button>OK</button>
+				<!--
+					TODO: Relocate the onclick form value corrections to either client form validation or to the listUpdate remote function 
+				-->
+				<!-- <button>OK</button> -->
+				<!-- <button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].nodeValue = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].nodeValue = btnEvtData.owner as string}}>OK</button> -->
+				<button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;}}>OK</button>
 			</form>
 		</dialog>
 		<form {...deleteList} name="deleteListForm" id="deleteListForm"></form>
@@ -230,7 +376,7 @@ function populateListModal(listId:number){
 
 						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}">DELETE</button>
 
-						<button name="updateListFormButton" onclick={() => { updateListModalState.value = true;listId = Number(list.id);}}>Edit List</button>
+						<button name="updateListFormButton" onclick={() => { updateListModalState.value = true;populateListModal(list?.id as number) as undefined; console.log('UPDATE FORM BUTTON');console.log(btnEvtData)}}>Edit List</button>
 
 						<div class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}>
 							<h3>Array?:{Array.isArray(list?.items)}</h3>

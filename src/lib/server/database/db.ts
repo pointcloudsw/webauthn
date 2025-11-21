@@ -4,6 +4,7 @@ import { env, loadEnvFile } from 'node:process';
 import { type List, type Item } from '$lib/types/list';
 import { projectlib } from "$lib/constants";
 import type { int64 } from "@mysql/xdevapi/types/lib/Protocol/ScalarValues";
+import { logger } from "$lib/logger";
 // import { type int64 } from "@mysql/xdevapi/types/lib/Protocol/ScalarValues";
 loadEnvFile(`.${projectlib}/server/.env`);
 
@@ -113,7 +114,8 @@ export async function updateList(list: List) : Promise<int64> {
     coll = await adb.db.getCollection(adb.cfg.schema ?? '',adb.collection);
     if (!coll)
         throw new Error("DB collection found");
-
+    logger(`Updating database...\n{ Schema:${adb.cfg.schema},\nCollection:${adb.collection},\nOwner: ${list.owner},\nListID: ${list.id}}`);
+    console.log(list);
     result = await adb.db.update(
         adb.cfg.schema ?? '',
         adb.collection,
