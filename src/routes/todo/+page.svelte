@@ -216,7 +216,7 @@ function insertOrUpdateFormInputs(docForm:string,el:string,val:string){
 
 }
 
-function restoreUpdateFormStaticValues(docForm:string){
+function restoreUpdateFormStaticValues(docForm:string) : void {
 
 	insertOrUpdateFormInputs(docForm,'modified',(new Date()).toISOString());
 	let newTag = document.createElement('input');
