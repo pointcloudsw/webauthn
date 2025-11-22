@@ -20,10 +20,11 @@ export const getLists = query( v.number(), async userId => {
 
 const list = v.object({
 	created: v.optional(v.string()),
+	modified: v.optional(v.string()),
 	dbid: v.optional(v.string()),
 	editable: v.optional(v.boolean(), true),
 	id: v.optional(v.number(), -1),
-	items: v.optional(v.array(v.object({created: v.optional(v.string()),dbid: v.optional(v.string()),editable: v.optional(v.boolean(), true),flag: v.optional(v.number()),id: v.optional(v.number()),priority: v.optional(v.number()),sequence: v.optional(v.number()),status: v.optional(v.number()),text: v.optional(v.string())}))),
+	items: v.optional(v.array(v.object({created: v.optional(v.string()),modified: v.optional(v.string()),dbid: v.optional(v.string()),editable: v.optional(v.boolean(), true),flag: v.optional(v.number()),id: v.optional(v.number()),priority: v.optional(v.number()),sequence: v.optional(v.number()),status: v.optional(v.number()),text: v.optional(v.string())}))),
 	owner: v.optional(v.number(), -1),
 	title: v.optional(v.string(), '')
 });
@@ -87,6 +88,7 @@ export const listUpdate=form('unchecked', async data => {
 	const list: List = { editable: false };
 	list.id = undefined;
 	list.created = undefined;
+	list.modified = undefined;
 	list.owner = undefined;
 	list.title = undefined;
 	// list.items = undefined;
@@ -106,9 +108,10 @@ export const listUpdate=form('unchecked', async data => {
 	logger(`DATA: ${data}, OWNER: ${data.owner}, LISTID: ${data.id}`);
 	if ( data.id && data.owner )
 	try {	
-		let { id, created, editable, owner, title } = data;
+		let { id, created, modified, editable, owner, title } = data;
 		list.id = Number(id);
 		list.created = String(created);
+		list.modified = String(modified);
 		list.editable = Boolean(editable);
 		list.owner = Number(owner);
 		list.title = String(title);

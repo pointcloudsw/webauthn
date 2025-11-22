@@ -2,6 +2,7 @@ import * as v from 'valibot';
 
 export const Item = v.object({
     created: v.optional(v.date(), (()=>new Date())),
+    modified: v.optional(v.date()),
     dbid: v.optional(v.string()),
     due: v.optional(v.date()),
     editable: v.optional(v.boolean(), true),
@@ -17,11 +18,12 @@ export type Item = v.InferOutput<typeof Item>;
 
 export const List = v.object({
     created: v.optional(v.string()),
+    modified: v.optional(v.string()),
     dbid: v.optional(v.string()),
     editable: v.optional(v.boolean(),true),
     id: v.optional(v.number()),
     /* items: v.optional(v.array(Item)), */
-    items: v.optional(v.array(v.object({created: v.optional(v.string()),dbid: v.optional(v.string()),editable: v.optional(v.boolean(), true),flag: v.optional(v.number()),id: v.optional(v.number()),priority: v.optional(v.number()),sequence: v.optional(v.number()),status: v.optional(v.number()),text: v.optional(v.string())}))),
+    items: v.optional(v.array(v.object({created: v.optional(v.string()),modified: v.optional(v.string()),dbid: v.optional(v.string()),editable: v.optional(v.boolean(), true),flag: v.optional(v.number()),id: v.optional(v.number()),priority: v.optional(v.number()),sequence: v.optional(v.number()),status: v.optional(v.number()),text: v.optional(v.string())}))),
     owner: v.optional(v.number()),
     title: v.optional(v.string())
 });

@@ -13,6 +13,7 @@
 	type EventDataSetItem = {
 		id: ID;
 		created: DT;
+		modified: DT;
 		editable: BL;
 		text: TXT;
 	};
@@ -22,6 +23,7 @@
 		title: TXT;
 		owner: ID;
 		created: DT;
+		modified: DT;
 		editable: BL;
 		items: EventDataSetItem[] | undefined;
 	};
@@ -37,6 +39,7 @@
 	let evtDataSetItem: EventDataSetItem = $state({
 		id: undefined,
 		created: undefined,
+		modified: undefined,
 		editable: undefined,
 		text: undefined
 	});
@@ -53,6 +56,7 @@
 	let btnEvtData: EventDataSet = $state({
 		id: undefined,
 		created: undefined,
+		modified: undefined,
 		editable: undefined,
 		owner: undefined,
 		title: undefined,
@@ -98,6 +102,7 @@ function populateListModal(listId:number){
 	console.log(`\n\nClearing Button Event Data\n\n`);
 		btnEvtData.id = undefined;
 		btnEvtData.created = undefined;
+		btnEvtData.modified = undefined;
 		btnEvtData.editable = undefined;
 		btnEvtData.owner = undefined;
 		btnEvtData.title = undefined;
@@ -107,6 +112,7 @@ function populateListModal(listId:number){
 	console.log(`\n\nClearing Button Event Item ID:\n ${item.id} \n`);
 				item.id = undefined
 				item.created = undefined
+				item.modified = undefined
 				item.editable = undefined
 				item.text = undefined
 			});
@@ -116,6 +122,7 @@ function populateListModal(listId:number){
 	if ( evtDataSetItem?.id ) {
 		evtDataSetItem.id = undefined;
 		evtDataSetItem.created = undefined;
+		evtDataSetItem.modified = undefined;
 		evtDataSetItem.editable = undefined;
 		evtDataSetItem.text = undefined;
 	}
@@ -130,6 +137,8 @@ function populateListModal(listId:number){
 
 		if (list) {
 			btnEvtData.created = list?.querySelector(`[data-list_created]`)?.textContent;
+
+			btnEvtData.modified = list?.querySelector(`[data-list_modified]`)?.textContent;
 
 			btnEvtData.owner = Number(list?.querySelector(`[data-list_owner]`)?.textContent);
 
@@ -175,6 +184,7 @@ function populateListModal(listId:number){
 					console.log(btnEvtData.items);
 					evtDataSetItem.id = undefined;
 					evtDataSetItem.created = undefined;
+					evtDataSetItem.modified = undefined;
 					evtDataSetItem.editable = undefined;
 					evtDataSetItem.text = undefined;
 
@@ -187,10 +197,51 @@ function populateListModal(listId:number){
 	console.log(JSON.stringify(btnEvtData));
 }
 
-function restoreUpdateFormStaticValues(docForms:HTMLCollectionOf<HTMLFormElement>){
-	document.forms['updateListForm' as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;
-	console.log(document.forms['updateListForm' as any].elements);
-	document.forms['updateListForm' as any].childNodes.forEach( c => console.log(c));
+function insertOrUpdateFormInputs(docForm:string,el:string,val:string){
+	let newTag = document.createElement('input');
+	let newAttribute = document.createAttribute('name');
+	let qS = `label[for='${el}']`;
+	let insAfter = document.forms[docForm as any].querySelector(qS);
+
+	newAttribute.value = el;
+	newTag.setAttributeNode(newAttribute)
+	newAttribute = document.createAttribute('value')
+	newAttribute.value = val;
+	newTag.setAttributeNode(newAttribute);
+
+	if ( insAfter )
+		insAfter.insertAdjacentElement('afterend',newTag);
+	else
+		document.forms[docForm as any].appendChild(newTag);	
+
+}
+
+function restoreUpdateFormStaticValues(docForm:string){
+
+	insertOrUpdateFormInputs(docForm,'modified',(new Date()).toISOString());
+	let newTag = document.createElement('input');
+	let newAttribute = document.createAttribute('name');
+
+	// List Modified Date
+	// TODO:  update modified date only when user actually changed something in the list or in list items, if user escaped out or hit cancel, then modified date should not be updated, but if 'Save' button was activated and pressed, then modified date should be updated
+
+	// let insAfter = document.forms[docForm as any].querySelector("label[for='modified'");
+	// newAttribute.value = 'modified';
+	// newTag.setAttributeNode(newAttribute)
+	// newAttribute = document.createAttribute('value')
+	// newAttribute.value = (new Date()).toString();
+	// newTag.setAttributeNode(newAttribute);
+	// if ( insAfter )
+	// 	insAfter.insertAdjacentElement('afterend',newTag);
+	// else
+	// 	document.forms[docForm as any].appendChild(newTag);
+
+
+	// when written, remember to remove these input fields from the dialog input form as they'll be manually added to the form inside this method instead
+
+	document.forms[docForm as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string; document.forms[docForm as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;
+	console.log(document.forms[docForm as any].elements);
+	document.forms[docForm as any].childNodes.forEach( c => console.log(c));
 }
 </script>
 
@@ -328,7 +379,7 @@ function restoreUpdateFormStaticValues(docForms:HTMLCollectionOf<HTMLFormElement
 				<!-- <input {...listUpdate.fields.owner.set(btnEvtData.owner as number)} name="owner" type="hidden" />				 -->
 				<label for="created">Created: {btnEvtData?.created || ""}</label>
 				<input {...created.as('text')} name="created" type="hidden" value={btnEvtData?.created} />
-				<label for="modified">Modified: {btnEvtData?.created || ""}</label>
+				<label for="modified">Modified: {btnEvtData?.modified || ""}</label>
 				<label for="title"
 					>Title:
 					<input {...title.as('text')} name="title" type="text" value={btnEvtData?.title || '' } />
@@ -355,6 +406,7 @@ function restoreUpdateFormStaticValues(docForms:HTMLCollectionOf<HTMLFormElement
 
 							<label for="created_{i?.id}">Created: {i?.created}</label>
 							<input {...items[iidx].created.as('text')} name="created_{i?.id}" type="hidden" value={i?.created || ''} />
+							<label for="modified_{i?.id}">Modified: {i?.modified}</label>
 							<label for="item_txt_{i?.id}">Todo:</label>
 							<input {...items[iidx].text.as('text')} name="item_txt_{i?.id}" type="textarea" value={i.text || ''} />
 							<label for="item_editable_{i?.id}">Editable:</label>
@@ -371,7 +423,7 @@ function restoreUpdateFormStaticValues(docForms:HTMLCollectionOf<HTMLFormElement
 				<!-- <button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].nodeValue = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].nodeValue = btnEvtData.owner as string}}>OK</button> -->
 				 <!-- TODO:  In the meantime, move these cleanups to their own function where static values from both the main form and from the individual form items can be saved back to the form -->
 				<!-- <button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;}}>OK</button> -->
-				<button onclick={()=>{restoreUpdateFormStaticValues(document.forms)}}>OK</button>
+				<button onclick={()=>{restoreUpdateFormStaticValues('updateListForm')}}>OK</button>
 			</form>
 		</dialog>
 		<form {...deleteList} name="deleteListForm" id="deleteListForm"></form>
@@ -385,6 +437,7 @@ function restoreUpdateFormStaticValues(docForms:HTMLCollectionOf<HTMLFormElement
 						<p data-name="id" data-value={list.id} data-list_id={list.id}>{list.id}</p>
 						<p data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</p>
 						<p data-name="created" data-value={list.created} data-list_created={list.created}>{list.created}</p>
+						<p data-name="modified" data-value={list.modified} data-list_modified={list.modified}>{list.modified}</p>
 						<p data-name="owner" data-value={list.owner} data-list_owner={list.owner}>{list.owner}</p>
 						<p data-name="editable" data-value={list.editable} data-list_editable={list.editable}>{list.editable}</p>
 
@@ -401,6 +454,7 @@ function restoreUpdateFormStaticValues(docForms:HTMLCollectionOf<HTMLFormElement
 									<p data-name="id" data-value={item.id} data-list-item_id={item.id}>Item ID: {item.id}</p>
 									<p data-name="text" data-value={item.text} data-list-item_text={item.text}>Item Text: {item.text}</p>
 									<p data-name="created" data-value={item.created} data-list-item_created={item.created}>Item Created: {item.created}</p>
+									<p data-name="modified" data-value={item.modified} data-list-item_modified={item.modified}>Item Modified: {item.modified}</p>
 									<p data-name="editable" data-value={item.editable} data-list-item_editable={item.editable}>Item is Editable: {item.editable}</p>
 								</div>
 							{/each}
