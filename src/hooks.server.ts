@@ -63,7 +63,11 @@ const authHandle: Handle = async ({ event, resolve }) => {
 
 	event.locals.session = session;
 	event.locals.user = user;
-
+	// console.log(event.request.body.);
+	// console.log(event.request.headers);
+	// console.log(event.request.body);
+	// console.log(event.request.formData.length);
+	logger(`Resolving event ${event}`);
 	return await resolve(event);
 };
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { logger } from "$lib/logger";
 	import { createList, getLists, deleteList, listUpdate } from "./data.remote";
 	// import * as v from 'valibot';
 
@@ -197,7 +198,8 @@ function populateListModal(listId:number){
 	console.log(JSON.stringify(btnEvtData));
 }
 
-function insertOrUpdateFormInputs(docForm:string,el:string,val:string){
+function insertOrUpdateFormInputs(docForm:string,el:string,val: string){
+	logger(`Updating: ${docForm} ${el} with value ${val}...`);
 	let newTag = document.createElement('input');
 	let newAttribute = document.createAttribute('name');
 	let qS = `label[for='${el}']`;
@@ -214,32 +216,30 @@ function insertOrUpdateFormInputs(docForm:string,el:string,val:string){
 	else
 		document.forms[docForm as any].appendChild(newTag);	
 
+	
+	logger(`Form update complete.`);
+	console.log(document.forms[docForm as any]);
+
 }
 
 function restoreUpdateFormStaticValues(docForm:string) : void {
 
-	insertOrUpdateFormInputs(docForm,'modified',(new Date()).toISOString());
-	let newTag = document.createElement('input');
-	let newAttribute = document.createAttribute('name');
+	logger(`Updating docForm...`);
+	console.log(document.forms[docForm as any]);
 
 	// List Modified Date
 	// TODO:  update modified date only when user actually changed something in the list or in list items, if user escaped out or hit cancel, then modified date should not be updated, but if 'Save' button was activated and pressed, then modified date should be updated
 
-	// let insAfter = document.forms[docForm as any].querySelector("label[for='modified'");
-	// newAttribute.value = 'modified';
-	// newTag.setAttributeNode(newAttribute)
-	// newAttribute = document.createAttribute('value')
-	// newAttribute.value = (new Date()).toString();
-	// newTag.setAttributeNode(newAttribute);
-	// if ( insAfter )
-	// 	insAfter.insertAdjacentElement('afterend',newTag);
-	// else
-	// 	document.forms[docForm as any].appendChild(newTag);
-
-
 	// when written, remember to remove these input fields from the dialog input form as they'll be manually added to the form inside this method instead
 
-	document.forms[docForm as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string; document.forms[docForm as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;
+
+	insertOrUpdateFormInputs(docForm,'modified',(new Date()).toISOString());
+	insertOrUpdateFormInputs(docForm,'id',btnEvtData.id as string);
+	insertOrUpdateFormInputs(docForm,'owner',btnEvtData.owner as string);
+	insertOrUpdateFormInputs(docForm,'created',btnEvtData.created as string ?? '');
+
+	// document.forms[docForm as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string;
+	// document.forms[docForm as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;
 	console.log(document.forms[docForm as any].elements);
 	document.forms[docForm as any].childNodes.forEach( c => console.log(c));
 }
