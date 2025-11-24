@@ -12,22 +12,25 @@
 		"rslt_ps": "$( if ( $? -ne 0 ) { exit } )"
 	},
 	"scripts": {
-		"build": "$npm_package_config_exec $npm_package_config_cln && $npm_package_config_exec $npm_package_config_nci && $npm_package_config_exec $npm_package_config_chk && ([ $? -ne 0 ] && return) && $npm_package_config_exec $npm_package_config_bld",
+		"build-prod": "$npm_package_config_exec $npm_package_config_bld",
+		"clean:build-prod": "$npm_package_config_exec $npm_package_config_cln && $npm_package_config_exec $npm_package_config_nci && $npm_package_config_exec $npm_package_config_chk && ([ $? -ne 0 ] && return) && $npm_package_config_exec $npm_package_config_bld",
 		"check": "$npm_package_config_exec $npm_package_config_chk",
 		"ci": "$npm_package_config_exec $npm_package_config_nci",
 		"clean": "$npm_package_config_exec $npm_package_config_cln",
-		"dev": "$npm_package_config_exec $npm_package_config_cln && $npm_package_config_exec $npm_package_config_nci && $npm_package_config_exec $npm_package_config_chk && ([ $? -ne 0 ] && return) && $npm_package_config_exec node_exec_detach npx vite dev",
-		"run": "$npm_package_config_exec node_exec_detach node_modules/.bin/vite -m production $npm_package_config_prd_prms",
-		"prod": "$npm_package_config_exec $npm_package_config_cln && $npm_package_config_exec $npm_package_config_nci && $npm_package_config_exec $npm_package_config_chk && ([ $? -ne 0 ] && return) && $npm_package_config_exec $npm_package_config_bld && ([ $? -ne 0 ] && return) && $npm_package_config_exec node_exec_detach node_modules/.bin/vite -m production $npm_package_config_prd_prms",
+		"all:dev": "$npm_package_config_exec $npm_package_config_cln && $npm_package_config_exec $npm_package_config_nci && $npm_package_config_exec $npm_package_config_chk && ([ $? -ne 0 ] && return) && $npm_package_config_exec node_exec_detach npx vite dev",
+		"prod": "$npm_package_config_exec node_exec_detach node_modules/.bin/vite -m production $npm_package_config_prd_prms",
+		"all:prod": "$npm_package_config_exec $npm_package_config_cln && $npm_package_config_exec $npm_package_config_nci && $npm_package_config_exec $npm_package_config_chk && ([ $? -ne 0 ] && return) && $npm_package_config_exec $npm_package_config_bld && ([ $? -ne 0 ] && return) && $npm_package_config_exec node_exec_detach node_modules/.bin/vite -m production $npm_package_config_prd_prms",
 		"format": "prettier --write .",
 		"lint": "prettier --check .",
 		"preview": "vite preview",
 		"sk:check": "svelte-check --tsconfig ./tsconfig.json",
 		"sk:sync": "svelte-kit sync",
-		"sk:sync-check-watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"sk:sync-check-watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"postinstall": "patch-package"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.11",
+		"patch-package": "^8.0.1",
 		"prettier": "^3.1.1",
 		"svelte-check": "^4.3.3"
 	},
@@ -58,5 +61,4 @@
 			"cookie": "^1.0.2"
 		}
 	}
-
 }

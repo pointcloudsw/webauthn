@@ -198,12 +198,20 @@ function populateListModal(listId:number){
 	console.log(JSON.stringify(btnEvtData));
 }
 
-function insertOrUpdateFormInputs(docForm:string,el:string,val: string){
+
+
+function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: string){
 	logger(`Updating: ${docForm} ${el} with value ${val}...`);
+	let qSdel = `input[name='${el}']`;
+	let qSadd = `[data-field='${el}']`;
+	
+	// Remove all (hopefully none, but just in case) arbitrary form input fields added by client
+	document.forms[docForm as any].querySelectorAll(qSdel).forEach( e => e.remove() );
+
+	// Add new form inputs to identify and match record to be updated
 	let newTag = document.createElement('input');
 	let newAttribute = document.createAttribute('name');
-	let qS = `label[for='${el}']`;
-	let insAfter = document.forms[docForm as any].querySelector(qS);
+	let insAfter = document.forms[docForm as any].querySelector(qSadd);
 
 	newAttribute.value = el;
 	newTag.setAttributeNode(newAttribute)
@@ -233,10 +241,10 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 	// when written, remember to remove these input fields from the dialog input form as they'll be manually added to the form inside this method instead
 
 
-	insertOrUpdateFormInputs(docForm,'modified',(new Date()).toISOString());
-	insertOrUpdateFormInputs(docForm,'id',btnEvtData.id as string);
-	insertOrUpdateFormInputs(docForm,'owner',btnEvtData.owner as string);
-	insertOrUpdateFormInputs(docForm,'created',btnEvtData.created as string ?? '');
+	rmAndAppendReadonlyFormInputs(docForm,'modified',(new Date()).toISOString());
+	rmAndAppendReadonlyFormInputs(docForm,'id',btnEvtData.id as string);
+	rmAndAppendReadonlyFormInputs(docForm,'owner',btnEvtData.owner as string);
+	rmAndAppendReadonlyFormInputs(docForm,'created',btnEvtData.created as string ?? '');
 
 	// document.forms[docForm as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string;
 	// document.forms[docForm as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;
@@ -367,27 +375,23 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 		>
 			<p>{btnEvtData?.title ?? "No Title Found"}</p>
 			<form {...listUpdate} id="updateListForm" name="updateListForm">
-				<label for="id">ID: {btnEvtData?.id || ""}</label>
+				<p data-field="id">ID: {btnEvtData?.id || ""}</p>
 				<!-- <input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} />				 --> 
-				<input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} />
+				<!-- <input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} /> -->
 				<!-- <input {...id.as(['hidden', btnEvtData.id])} name="id" type="hidden" value={btnEvtData.id} />				 -->
 				 <!-- {@debug listUpdate} -->
 				<!-- <input {...id.as(btnEvtData.id) } name="id" type="hidden" />				 -->
-				<label for="owner">Owner: {btnEvtData.owner}</label>
-				<input {...owner.as('number')} name="owner" type="hidden" value={btnEvtData?.owner} />
+				<p data-field="owner">Owner: {btnEvtData.owner}</p>
+				<!-- <input {...owner.as('number')} name="owner" type="hidden" value={btnEvtData?.owner} /> -->
 				<!-- <input {...owner.value()} name="owner" type="hidden" value={btnEvtData?.owner} /> -->
 				<!-- <input {...listUpdate.fields.owner.set(btnEvtData.owner as number)} name="owner" type="hidden" />				 -->
-				<label for="created">Created: {btnEvtData?.created || ""}</label>
-				<input {...created.as('text')} name="created" type="hidden" value={btnEvtData?.created} />
-				<label for="modified">Modified: {btnEvtData?.modified || ""}</label>
-				<label for="title"
-					>Title:
-					<input {...title.as('text')} name="title" type="text" value={btnEvtData?.title || '' } />
-				</label>
-				<label for="editable"
-					>Editable:
-					<input {...editable.as('checkbox')} name="editable" type="checkbox" value={btnEvtData?.editable || false} />
-				</label>
+				<p data-field="created">Created: {btnEvtData?.created || ""}</p>
+				<!-- <input {...created.as('text')} name="created" type="hidden" value={btnEvtData?.created} /> -->
+				<p data-field="modified">Modified: {btnEvtData?.modified || ""}</p>
+				<label for="title">Title:</label>
+				<input {...title.as('text')} name="title" type="text" value={btnEvtData?.title || '' } />
+				<label for="editable">Editable:</label>
+				<input {...editable.as('checkbox')} name="editable" type="checkbox" value={btnEvtData?.editable || false} />
 				<section>
 					<!-- <label for="items">Items:</label> -->
 					<input name="items" type="readonly" value={btnEvtData?.items || ""} />
