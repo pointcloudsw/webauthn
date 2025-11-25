@@ -11,6 +11,8 @@ import { logger } from "$lib/exports";
 const bucket = new RefillingTokenBucket<string>(100, 1);
 
 const rateLimitHandle: Handle = async ({ event, resolve }) => {
+	logger(`ROUTEID: ${event.route?.id}, REFERRER: ${event.request?.referrer}, eURL: ${event.url}, rURL: ${event.request.url}, METHOD: ${event?.request?.method}, SOURCEIP: ${event?.getClientAddress()}`);
+
 	// Note: Assumes X-Forwarded-For will always be defined.
 	const clientIP = event.request.headers.get("X-Forwarded-For");
 	if (clientIP === null) {
@@ -32,81 +34,66 @@ const rateLimitHandle: Handle = async ({ event, resolve }) => {
 
 const authHandle: Handle = async ({ event, resolve }) => {
 
+	// Get session cookie from request
 	const token = event.cookies.get("session");
 	
-		// logger(`TOKEN: ${token}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, CLIENT ADDRESS: ${event?.getClientAddress()}`);
-		logger(`TOKEN: ${token}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
+	logger(`TOKEN: ${token}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, METHOD: ${event?.request?.method}`);
 
-
-		// if ( event.url.pathname === '/' ){
-		// 	return await resolve(event);
-		// }
-	// if (token === null) {
-	// 	event.locals.user = null;
-	// 	event.locals.session = null;
-	// 	return resolve(event);
-	// }
+	// Validate session state
 	const { session, user } = token ? validateSessionToken(token) : { session: null, user: null };
 
-	logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
+	logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, METHOD: ${event?.request?.method}, SOURCEIP: ${event?.getClientAddress()}`);
 
+	// If session is valid, refresh cookie
 	if ( (token && session && user) ) {
 
 		setSessionTokenCookie(event, token, session.expiresAt);
 
-		logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
+		logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, METHOD: ${event?.request?.method}`);
+
 
 	} else {
 
 		deleteSessionTokenCookie(event);
 		event.locals.user = null;
 		event.locals.session = null;
-		logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
+		logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, METHOD: ${event?.request?.method}`);
 
 	}
 
 	event.locals.session = session;
 	event.locals.user = user;
-
+	// console.log(event.request.body.);
+	// console.log(event.request.headers);
+	// console.log(event.request.body);
+	// console.log(event.request.formData.length);
+	logger(`Resolving event ${event}`);
 	return await resolve(event);
 };
 
 const redirectHandle: Handle = async ({ event, resolve }) => {
 
-	const token = event.cookies.get("session");
+	const { request, route, url } = event;
+	const { session, user } = event.locals;
 
-	const { session, user } = token ? validateSessionToken(token) : { session: null, user: null };
-
-	logger(`TOKEN: ${token}, SESSION: ${session?.userId}, USER: ${user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}`);
-
-		if (event.url.pathname.startsWith('/auth/logout') ) {
-			// return redirect(307, '/');
-		event.url.pathname = '/';
-		} else if ( !token && event.url.pathname !== '/' ) {
-
-		logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
-
-		// return redirect(307, '/auth/login');
-		event.url.pathname = '/auth/login';
+	logger(`USERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}, METHOD: ${event?.request?.method}, SOURCEIP: ${event?.getClientAddress()}`);
 
 
-		logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
+	if ( !( session && user ) )
+		if ( ! ( url.pathname.startsWith('/auth/') || route.id?.startsWith('/auth/') || route.id === '/' ) ) {
+	
+			logger(`\n----- REDIRECTING to / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}, METHOD: ${event?.request?.method}`);
 
-			// return redirect(307, '/auth/login');
-			// return resolve(event, '/auth/login');
-			// return await resolve(event);
-		} else {
-			event.url.pathname = '/';
-		logger(`TOKEN: ${token}, SESSION: ${event.locals?.session?.userId}, USER: ${event.locals?.user?.username}, REFERRER: ${event?.request?.referrer}, URL: ${event?.request?.url}, PATHNAME: ${event?.url?.pathname}`);
+			return await redirect(303, '/');
 		}
-
+	
+		logger(`\n----- RESOLVING EVENT REQUEST / -----\nUSERNAME: ${user?.username}, SESSIONUSERID: ${session?.userId}, ROUTEID: ${route.id}, REFERRER: ${request?.referrer}, eURL: ${url}, rURL: ${request.url}, METHOD: ${event?.request?.method}`);
 
 
 	return await resolve(event);
 };
 
 export const init: ServerInit = async () => {
-	// loadEnvFile("/home/pcs/sw/tdapp/webauthn/src/lib/server/.env");
 	await dbConnect();
 };
 

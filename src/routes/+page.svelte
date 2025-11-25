@@ -2,9 +2,11 @@
 	import { logger } from "$lib/logger";
 
 	let { data } = $props();
+	let { action, path, userid, username } = data;
 
-	let action =  data?.username && data?.userId ? 'Logout' : 'Login';
-	let wmsg = action === 'Logout' ? `Welcome aboard, ${data.username}!` : `Welcome, please login to continue`;
+	logger(`\n----- / -----\nUSERNAME: ${username}, SESSIONUSERID: ${userid}`);
+
+	let wmsg = action === 'Logout' ? `Welcome aboard, ${username}!` : `Welcome, please login to continue`;
 </script>
 <!-- <header>
 	<a href="/">Home</a>
@@ -15,10 +17,9 @@
 
 <main>
 	<h1>{wmsg}</h1>
-	<!-- <form method="post" action={`/auth/${action.toLowerCase()}`}>
-		<button>{action}</button>
-	</form> -->
-	<a href={`/auth/${action.toLowerCase()}`} class="btn">{action}</a>
+	<form method="post" action={path}>
+		<button class="btn">{action}</button>
+	</form>
 
 </main>
 

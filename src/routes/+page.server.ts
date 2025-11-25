@@ -4,16 +4,17 @@ import { get2FARedirect } from "$lib/server/auth/2fa";
 
 import type { Actions } from "./$types";
 import { logger } from '$lib/exports';
+import { navMap, projectauth } from "$lib/constants";
 
 export function load(event) {
 	
 	if ( event.locals?.user ){
 		
 		if (!event.locals.user.emailVerified)
-			return redirect(302, "/auth/verify-email");
+			return redirect(302, `${projectauth}/verify-email`);
 		
 		if (!event.locals.user.registered2FA)
-			return redirect(302, "/auth/2fa/setup");
+			return redirect(302, `${projectauth}/2fa/setup`);
 	}
 
 	if ( event.locals?.session && event.locals?.user ) {
@@ -21,35 +22,18 @@ export function load(event) {
 			return redirect(302, get2FARedirect(event.locals?.user));
 	}
 
-	const username = event.locals?.user?.username ?? '';
-	const userId = event.locals.session?.userId ?? -1;
-	return { username, userId };
+	const { user, session } = event.locals;
+	const action = user?.username && session?.userId ? `Logout` : `Login`;
+	const path = navMap.get(action.toLocaleLowerCase())?.path;
+	return {
+		username: user?.username,
+		userid: session?.userId,
+		action: action,
+		path: path
+	};
 }
 
 export const actions: Actions = {
-	default: action
+	login: async () => { return await redirect( 307, navMap.get('login')?.path ?? '/' ) },
+	logout: async () => { return await redirect( 307, navMap.get('logout')?.path ?? '/' ) }
 };
-
-async function action(event: RequestEvent) {
-	logger(`SESSION: ${event.locals.session}, USER: ${event.locals.user}, REFERER: ${event.request.referrer}, REDIRECT: ${event.request.redirect}, DESTINATION: ${event.request.destination}`);
-
-	
-	// if (event.locals.session === null) {
-	// 	return fail(401, {
-	// 		message: "Not authenticated"
-	// 	});
-	// }
-
-	// Logout
-	// if ( event.url.pathname === '/auth/logout' )
-	// 	return redirect(302, event.url.href);
-	
-	// Login
-	// if ( !( event.locals.session && event.locals.user && event.url.pathname !== '/' ) )
-	// 	return redirect(302, "/auth/login");
-	
-	return redirect(302, event.url.href);
-	
-	// invalidateSession(event.locals.session.id);
-	// deleteSessionTokenCookie(event);
-}

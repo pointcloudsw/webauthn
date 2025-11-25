@@ -10,24 +10,33 @@ import type { SessionFlags } from "$lib/server/auth/session";
 import type { Actions, PageServerLoadEvent, RequestEvent } from "./$types";
 
 import {logger} from '$lib/exports';
+import { navMap, projectauth, projectroot } from "$lib/constants";
 
+// export const _login = navMap.get('login')?.path ?? `${projectroot}/`;
+const login = navMap.get('login')?.path ?? `${projectroot}/`;
 
 export function load(event: PageServerLoadEvent) {
 	logger(`SESSIONUSERID: ${event?.locals?.session?.userId}`);
 	logger(`USERID: ${event?.locals?.user?.id}`);
 	if (event.locals.session !== null && event.locals.user !== null) {
 		if (!event.locals.user.emailVerified) {
-			return redirect(302, "/auth/verify-email");
+			return redirect(302, `${projectauth}/verify-email`);
 		}
 		if (!event.locals.user.registered2FA) {
-			return redirect(302, "/auth/2fa/setup");
+			return redirect(302, `${projectauth}/2fa/setup`);
 		}
 		if (!event.locals.session.twoFactorVerified) {
 			return redirect(302, get2FARedirect(event.locals.user));
 		}
 	}
 
-	return { user: event.locals?.user, session: event.locals?.session }
+	return {
+		auth: projectauth,
+		home: `${projectroot}/`,
+		login: login,
+		session: event.locals?.session,
+		user: event.locals?.user
+	}
 	// return redirect(307, '/auth/login');
 	// return {};
 }
@@ -106,10 +115,10 @@ async function action(event: RequestEvent) {
 	setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
 	if (!user.emailVerified) {
-		return redirect(302, "/auth/verify-email");
+		return redirect(302, `${projectauth}/verify-email`);
 	}
 	if (!user.registered2FA) {
-		return redirect(302, "/auth/2fa/setup");
+		return redirect(302, `${projectauth}/2fa/setup`);
 	}
 	return redirect(302, get2FARedirect(user));
 }

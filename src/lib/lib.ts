@@ -15,3 +15,20 @@ export const routes = Object.keys(
         return route === '' ? '/' : route;
     })
     .sort();
+
+// Courtesy of: https://github.com/oddbird/popover-polyfill/blob/main/src/popover.ts
+export function supportsPopover() {
+  return (
+    typeof HTMLElement !== 'undefined' &&
+    typeof HTMLElement.prototype === 'object' &&
+    'popover' in HTMLElement.prototype
+  );
+}
+
+// Courtesy of: https://github.com/oddbird/popover-polyfill/blob/main/src/popover.ts
+export function supportsPopoverHint() {
+  const el = document.createElement('div');
+  el.setAttribute('popover', 'hint');
+  // `el.popover` is "manual" in non-supporting browsers
+  return el.popover === 'hint';
+}

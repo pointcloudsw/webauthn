@@ -9,6 +9,12 @@ export interface ConnectionConfig {
   schema?: string;
 }
 
+export interface AppDb {
+    cfg: ConnectionConfig;
+    collection: string;
+    db?: MySQLXAccessor;  // Fixed: Removed angle brackets
+}
+
 export type MySqlDoc = mysqlx.Document;
 
 export interface QueryOptions {
@@ -147,6 +153,34 @@ export class MySQLXAccessor {
     return result.fetchAll();
   }
 
+  async update(
+    schemaName: string,
+    collectionName: string,
+    updates: Record<string, any>,
+    criteria: string,
+    options?: QueryOptions
+  ): Promise<int64> {
+    const collection = await this.getCollection(schemaName, collectionName);
+    let modify = collection.modify(criteria);
+
+
+    if (options?.bind) {
+      modify = modify.bind(options.bind);
+    }
+
+    if (options?.limit) {
+      modify = modify.limit(options.limit);
+    }    
+
+    for (const [key, value] of Object.entries(updates)) {
+      modify = modify.set(key, value);
+    }
+
+    const result = await modify.execute();
+
+    return result.getAffectedItemsCount();
+  }
+
   async updateOne(
     schemaName: string,
     collectionName: string,
@@ -181,13 +215,24 @@ export class MySQLXAccessor {
     return result.getAffectedItemsCount();
   }
 
-  async deleteOne(
+  async delete(
     schemaName: string,
     collectionName: string,
-    criteria: string
+    criteria: string,
+    options?: QueryOptions
   ): Promise<int64> {
     const collection = await this.getCollection(schemaName, collectionName);
-    const result = await collection.remove(criteria).limit(1).execute();
+    let query = await collection.remove(criteria);
+    
+    if (options?.bind) {
+      query = query.bind(options.bind);
+    }
+
+    if (options?.limit) {
+      query = query.limit(options.limit);
+    }
+
+    const result = await query.execute();
     return result.getAffectedItemsCount();
   }
 

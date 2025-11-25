@@ -2,7 +2,9 @@ import { decodeBase64 } from "@oslojs/encoding";
 import { createCipheriv, createDecipheriv } from "crypto";
 import { DynamicBuffer } from "@oslojs/binary";
 import { env, loadEnvFile } from "node:process";
-loadEnvFile("/home/pcs/sw/tdapp/webauthn/src/lib/server/.env");
+import { projectlib } from "$lib/constants";
+
+loadEnvFile(`.${projectlib}/server/.env`);
 
 const key = decodeBase64(env.ENCRYPTION_KEY || '');
 
