@@ -12,18 +12,18 @@
 	type TXT = string | undefined;
 
 	type EventDataSetItem = {
-		#id: ID; // system generated
-		#created: DT; // system generated
-		#modified: DT; // system generated
+		id: ID; // system generated
+		created: DT; // system generated
+		modified: DT; // system generated
 		editable: BL; // client checkbox
 		text: TXT; // client textarea
 	};
 	type EventDataSet = {
-		#id: ID; // system generated
+		id: ID; // system generated
 		title: TXT; // client input
-		#owner: ID; // system generated
-		#created: DT; // system generated
-		#modified: DT; // system generated
+		owner: ID; // system generated
+		created: DT; // system generated
+		modified: DT; // system generated
 		editable: BL; // client checkbox
 		items: EventDataSetItem[] | undefined; // client may add, remove, change or rearrange items
 	};
