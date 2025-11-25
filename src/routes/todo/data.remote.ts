@@ -96,7 +96,7 @@ export const listUpdate=form('unchecked', async data => {
 
 // TODO:  use context and/or cookie/session, database ID / listId and userID to validate and confirm that submitter is authorized to update the record 
 
-
+	logger('Data:');
 	console.log(data);
 	// if ( data.update ){
 	if ( data ){
@@ -105,10 +105,13 @@ export const listUpdate=form('unchecked', async data => {
 	// let [ id, owner ] = data.update.toString().split(',').map(e => Number(e));
 	// let i = data.get('id') as number;
 	// console.log(data.id.split(','));
-	logger(`DATA: ${data}, OWNER: ${data.owner}, LISTID: ${data.id}`);
+	logger(`DATA: ${data}, OWNER: ${data.owner}, LISTID: ${data.id}, EDITABLE: ${data.editable}`);
 	if ( data.id && data.owner )
 	try {	
 		let { id, created, modified, editable, owner, title } = data;
+		console.log('EDITABLE:');
+		console.log(editable);
+
 		list.id = Number(id);
 		list.created = String(created);
 		list.modified = String(modified);
@@ -120,6 +123,7 @@ export const listUpdate=form('unchecked', async data => {
 		// result = true;
 		// let info = data.update.toString().split(','); 
 		// logger(...info);
+		console.log(list);
 		result = await editList(list);
 	
 

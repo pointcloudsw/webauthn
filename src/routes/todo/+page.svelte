@@ -12,21 +12,20 @@
 	type TXT = string | undefined;
 
 	type EventDataSetItem = {
-		id: ID;
-		created: DT;
-		modified: DT;
-		editable: BL;
-		text: TXT;
+		#id: ID; // system generated
+		#created: DT; // system generated
+		#modified: DT; // system generated
+		editable: BL; // client checkbox
+		text: TXT; // client textarea
 	};
 	type EventDataSet = {
-		// dataset: DOMStringMap,
-		id: ID;
-		title: TXT;
-		owner: ID;
-		created: DT;
-		modified: DT;
-		editable: BL;
-		items: EventDataSetItem[] | undefined;
+		#id: ID; // system generated
+		title: TXT; // client input
+		#owner: ID; // system generated
+		#created: DT; // system generated
+		#modified: DT; // system generated
+		editable: BL; // client checkbox
+		items: EventDataSetItem[] | undefined; // client may add, remove, change or rearrange items
 	};
 
 	let domEvtStrMap: DOMStringMap = $state() as DOMStringMap;
@@ -389,12 +388,12 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<!-- <input {...created.as('text')} name="created" type="hidden" value={btnEvtData?.created} /> -->
 				<p data-field="modified">Modified: {btnEvtData?.modified || ""}</p>
 				<label for="title">Title:</label>
-				<input {...title.as('text')} name="title" type="text" value={btnEvtData?.title || '' } />
+				<input {...title.as('text')} id="title" name="title" type="text" value={btnEvtData?.title || '' } />
 				<label for="editable">Editable:</label>
-				<input {...editable.as('checkbox')} name="editable" type="checkbox" value={btnEvtData?.editable || false} />
+				<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={btnEvtData?.editable ?? false} {btnEvtData?.editable && `checked`}/>
 				<section>
 					<!-- <label for="items">Items:</label> -->
-					<input name="items" type="readonly" value={btnEvtData?.items || ""} />
+					<p data-field="items">{btnEvtData?.items || ""}</p>
 					<h3>Items:</h3>
 						{console.log(btnEvtData.items)}
 					{#if btnEvtData?.items }
@@ -406,16 +405,16 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 							<p>{console.log(i)}</p>
 							<label for="id_{i?.id}">ID: {i?.id}</label>
 							<!-- <input name="item_id_{i?.id}" type="readonly" value={i.id || ''} /> -->
-							<input {...items[iidx].id.as('number')} name="id_{i?.id}" type="hidden" value={i?.id} />
+							<input {...items[iidx].id.as('number')} id="id_{i?.id}" name="id_{i?.id}" type="hidden" value={i?.id} />
 
 							<label for="created_{i?.id}">Created: {i?.created}</label>
-							<input {...items[iidx].created.as('text')} name="created_{i?.id}" type="hidden" value={i?.created || ''} />
+							<input {...items[iidx].created.as('text')} name="created_{i?.id}" id="created_{i?.id}"  type="hidden" value={i?.created || ''} />
 							<label for="modified_{i?.id}">Modified: {i?.modified}</label>
 							<label for="item_txt_{i?.id}">Todo:</label>
-							<input {...items[iidx].text.as('text')} name="item_txt_{i?.id}" type="textarea" value={i.text || ''} />
+							<input {...items[iidx].text.as('text')} name="item_txt_{i?.id}" id="item_txt_{i?.id}" type="textarea" value={i.text || ''} />
 							<label for="item_editable_{i?.id}">Editable:</label>
 							<!-- <input {...i?.editable} name="item_editable" type="checkbox" value={i.editable || ''} /> -->
-							<input {...items[iidx].editable?.as('checkbox')} name="item_editable_{i?.id}" type="text" />
+							<input {...items[iidx].editable?.as('checkbox')} name="item_editable_{i?.id}" id="item_editable_{i?.id}" type="text" />
 						{/each}
 					{/if}
 				</section>
