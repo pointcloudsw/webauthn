@@ -1,30 +1,47 @@
 <script lang="ts">
+	import { ValidationError } from "$lib/list/verror";
+	import { validate } from "$lib/list/validate";
+
 	import { logger } from "$lib/logger";
 	import { createList, getLists, deleteList, listUpdate } from "./data.remote";
 	// import * as v from 'valibot';
+	import type { BL, DT, ID, TXT } from '$lib/list/types'
+	// import { ListManager } from "$lib/list/ListManager.svelte";
+	import { ListEntity } from "$lib/list/ListEntity.svelte";
 
 	let { data } = $props();
 	let { userId, username } = data;
 
-	type ID = number | string | undefined;
-	type DT = number | string | Date | undefined;
-	type BL = boolean | number | string | undefined;
-	type TXT = string | undefined;
+	// type ID = number | string | undefined;
+	// type DT = number | string | Date | undefined;
+	// type BL = boolean | number | string | undefined;
+	// type TXT = string | undefined;
 
+	// const manager = new ListManager(userId);
+	// let manager: ListManager = $state(new ListManager(userId));
+
+	// let manager: ListManager;
+	// manager = $state(new ListManager(userId));
+
+	// const manager: ListManager = new ListManager(userId.toString());
+	// manager.loadListsFromRmtQry();
+	// manager.getAllLists().forEach(l => console.log(l));
+	// console.log('LISTS');
+	
 	type EventDataSetItem = {
-		id: ID; // system generated
-		created: DT; // system generated
-		modified: DT; // system generated
-		editable: BL; // client checkbox
-		text: TXT; // client textarea
+		id: ID | number | undefined; // system generated
+		created: DT | string | undefined; // system generated
+		modified: DT | string | undefined; // system generated
+		editable: BL | undefined; // client checkbox
+		text: TXT | undefined; // client textarea
 	};
 	type EventDataSet = {
-		id: ID; // system generated
-		title: TXT; // client input
-		owner: ID; // system generated
-		created: DT; // system generated
-		modified: DT; // system generated
-		editable: BL; // client checkbox
+		id: ID | number | undefined; // system generated
+		title: TXT | undefined; // client input
+		owner: ID | number | undefined; // system generated
+		created: DT | string | undefined; // system generated
+		modified: DT | string | undefined; // system generated
+		editable: BL | undefined; // client checkbox
 		items: EventDataSetItem[] | undefined; // client may add, remove, change or rearrange items
 	};
 
@@ -80,6 +97,7 @@
 	let listItems: HTMLElement | null;
 	let qS = "";
 	// let listId: number = $state(-1);
+	// ?
 	let listItem = "";
 	let idx = '';
 
@@ -96,10 +114,11 @@
 
 // TODO: find a better solution to populating the list edit modal, that still adheres to the page as data source principle
 function populateListModal(listId:number){
-	console.log(`\n\nPopulating List Modal\n\nButton Event Data with data from List #:${listId}\n`);
+	// console.log(`\n\nPopulating List Modal\n\nButton Event Data with data from List #:${listId}\n`);
+	let edt;
 	
 	if ( btnEvtData ) {
-	console.log(`\n\nClearing Button Event Data\n\n`);
+	// console.log(`\n\nClearing Button Event Data\n\n`);
 		btnEvtData.id = undefined;
 		btnEvtData.created = undefined;
 		btnEvtData.modified = undefined;
@@ -107,9 +126,9 @@ function populateListModal(listId:number){
 		btnEvtData.owner = undefined;
 		btnEvtData.title = undefined;
 		if ( btnEvtData?.items ) {
-	console.log(`\n\nClearing Button Event Item Count:\n ${btnEvtData?.items.length} \n`);
+	// console.log(`\n\nClearing Button Event Item Count:\n ${btnEvtData?.items.length} \n`);
 			btnEvtData?.items.forEach( item => {
-	console.log(`\n\nClearing Button Event Item ID:\n ${item.id} \n`);
+	// console.log(`\n\nClearing Button Event Item ID:\n ${item.id} \n`);
 				item.id = undefined
 				item.created = undefined
 				item.modified = undefined
@@ -130,10 +149,8 @@ function populateListModal(listId:number){
 	if (listId > -1) {
 		btnEvtData.id = Number((btnEvtData?.id && Number(btnEvtData?.id) > -1) ? btnEvtData?.id : listId);
 
-		console.log(btnEvtData);
 		qS = `[data-list='${btnEvtData.id}']`;
 		list = document?.querySelector(qS);
-		console.log(list);
 
 		if (list) {
 			btnEvtData.created = list?.querySelector(`[data-list_created]`)?.textContent;
@@ -144,8 +161,12 @@ function populateListModal(listId:number){
 
 			btnEvtData.title = list?.querySelector(`[data-list_title]`)?.textContent;
 
+			edt = list?.querySelector(`[data-list_editable]`)?.attributes.getNamedItem('value')?.value?.toLocaleLowerCase();
+
+			btnEvtData.editable = edt === 'true' ? true : false;
+
+
 			listItems = list?.querySelector(`[data-list-items]`);
-			console.log(listItems);
 
 			// TODO: renovate this entire construct, starting with how we're instantiation evtDataSetItem (currently instantiated by setting invalid base values to the object; but also including how we're having to cycle through all elements regardless of if they contain valid dataset attribute types.  One idea would be to limit the list item query to search for those with a new data attribute such as data-type=list-item
 			if ( listItems?.childElementCount )
@@ -172,16 +193,12 @@ function populateListModal(listId:number){
 					
 					// push a shallow copy so subsequent mutations don't overwrite previously pushed objects
 					
-					console.log('evtDataSetItem:');
-					console.log({...evtDataSetItem});
 
 					// TODO:  The renovation todo at the top of this construct also applies to the statements below
 					btnEvtData.items = btnEvtData.items || [];
 					if ( evtDataSetItem?.id && evtDataSetItem.id != -1 && btnEvtData.items[btnEvtData.items.length-1]?.id != evtDataSetItem.id)
 						btnEvtData.items.push({ ...evtDataSetItem })
 					// btnEvtData.items.push(evtDataSetItem);
-					console.log('Event Data Items:');
-					console.log(btnEvtData.items);
 					evtDataSetItem.id = undefined;
 					evtDataSetItem.created = undefined;
 					evtDataSetItem.modified = undefined;
@@ -191,10 +208,6 @@ function populateListModal(listId:number){
 				})
 		}
 	}
-	console.log('Raw Event Data:');
-	console.log(btnEvtData);
-	console.log('Json Event Data:');
-	console.log(JSON.stringify(btnEvtData));
 }
 
 
@@ -225,8 +238,6 @@ function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: string){
 
 	
 	logger(`Form update complete.`);
-	console.log(document.forms[docForm as any]);
-
 }
 
 function restoreUpdateFormStaticValues(docForm:string) : void {
@@ -245,10 +256,6 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 	rmAndAppendReadonlyFormInputs(docForm,'owner',btnEvtData.owner as string);
 	rmAndAppendReadonlyFormInputs(docForm,'created',btnEvtData.created as string ?? '');
 
-	// document.forms[docForm as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string;
-	// document.forms[docForm as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;
-	console.log(document.forms[docForm as any].elements);
-	document.forms[docForm as any].childNodes.forEach( c => console.log(c));
 }
 </script>
 
@@ -390,19 +397,19 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<label for="title">Title:</label>
 				<input {...title.as('text')} id="title" name="title" type="text" value={btnEvtData?.title || '' } />
 				<label for="editable">Editable:</label>
-				<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={btnEvtData?.editable ?? false} {btnEvtData?.editable && `checked`}/>
+					<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={false} />
+
+				{#if btnEvtData.editable}
+					<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={true} checked />
+				{/if}
 				<section>
 					<!-- <label for="items">Items:</label> -->
 					<p data-field="items">{btnEvtData?.items || ""}</p>
 					<h3>Items:</h3>
-						{console.log(btnEvtData.items)}
 					{#if btnEvtData?.items }
 						<h3>Item Type: {typeof btnEvtData.items}</h3>
 						<h3>Item Count: {btnEvtData.items.length}</h3>
-						{console.log(btnEvtData.items)}
 						{#each btnEvtData?.items as i, iidx}
-							{console.log(i)}
-							<p>{console.log(i)}</p>
 							<label for="id_{i?.id}">ID: {i?.id}</label>
 							<!-- <input name="item_id_{i?.id}" type="readonly" value={i.id || ''} /> -->
 							<input {...items[iidx].id.as('number')} id="id_{i?.id}" name="id_{i?.id}" type="hidden" value={i?.id} />
@@ -435,6 +442,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 			<h1>Todo Lists</h1>
 
 			<div class="todo-list">
+				<!-- {#each await manager.loadListsFromRmtQry() as list (list)} -->
 				{#each await getLists(userId) as list (list)}
 					<div data-name="list" data-value={list.id} data-list={list.id}>
 						<p data-name="id" data-value={list.id} data-list_id={list.id}>{list.id}</p>
@@ -443,10 +451,16 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 						<p data-name="modified" data-value={list.modified} data-list_modified={list.modified}>{list.modified}</p>
 						<p data-name="owner" data-value={list.owner} data-list_owner={list.owner}>{list.owner}</p>
 						<p data-name="editable" data-value={list.editable} data-list_editable={list.editable}>{list.editable}</p>
-
+						<label>
+						{#if ( list?.editable ) }
+							<input type='checkbox' defaultChecked={true} value={true} />
+						{:else}
+							<input type='checkbox' defaultChecked={false} value={false} />
+						{/if}
+						 Editable</label>
 						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}">DELETE</button>
 
-						<button name="updateListFormButton" onclick={() => { updateListModalState.value = true;populateListModal(list?.id as number) as undefined; console.log('UPDATE FORM BUTTON');console.log(btnEvtData)}}>Edit List</button>
+						<button name="updateListFormButton" onclick={() => { updateListModalState.value = true;populateListModal(Number(list?.id)) as undefined; }}>Edit List</button>
 
 						<div class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}>
 							<h3>Array?:{Array.isArray(list?.items)}</h3>

@@ -35,26 +35,30 @@ export async function dbConnect(): Promise<MySQLXAccessor> {
 }
 
 export async function getListsByUser(user: string | number) : Promise<MySqlDoc[]> {
-    let lists : MySqlDoc[];
+    let lists : MySqlDoc[] = [];
 
-    if (!user) return [];
+    if (user){
 
-    if ( !adb.db?.isConnected() ) await dbConnect();
+        if ( !adb.db?.isConnected() ) await dbConnect();
 
-    if ( adb.db )
-        lists = await adb.db.find(
-            adb.cfg.schema ?? '',
-            adb.collection,
-            `owner = :uid`,
-            { 
-                bind: { uid: user }, 
-                sort: ["created desc"]
-            }
-        );
-    else
-        return [];
-
-
+        if ( adb.db )
+            lists = await adb.db.find(
+                adb.cfg.schema ?? '',
+                adb.collection,
+                `owner = :uid`,
+                { 
+                    bind: { uid: user }, 
+                    sort: ["created desc"]
+                }
+            );
+        
+        if ( adb.db )
+            console.log('DATABASE CONNECTED, LISTS:')
+        else
+            console.log('DATABASE NOT CONNECTED, LISTS:')
+        console.log(lists)
+        console.log('User:', user)
+    }
     return lists;
 }
 
