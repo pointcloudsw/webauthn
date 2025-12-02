@@ -90,6 +90,8 @@ export async function getListByListId(listId: number, user: string | number) : P
 export async function addList(list: List) : Promise<string[]> {
     let result : string[];
     let coll : Collection;
+    console.log('DATA BASE INPUT:');
+    console.log(list);
 
     if (!adb.db) {
         throw new Error('Database not connected. Call dbConnect() first.');

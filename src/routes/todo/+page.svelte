@@ -80,11 +80,13 @@
 		items: [ evtDataSetItem ]
 	});
 
-	createList.fields.created.set(new Date().toString());
-	createList.fields.editable.set(true);
-	createList.fields.owner.set(userId);
+	// createList.fields.created.set(new Date().toString());
+	// createList.fields.editable.set(true);
+	// createList.fields.owner.set(userId);
 
-	const { created, dbid, editable, id, items, owner, title } = createList.fields;
+	const createListMap = new Map();
+
+	const { created, modified, dbid, editable, id, items, owner, title } = createList.fields;
 
 	const createListModal = $state({ value: false });
 	let createListDialog: HTMLDialogElement = $state() as HTMLDialogElement;
@@ -209,7 +211,7 @@ function populateListModal(listId:number){
 
 
 
-function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: string){
+function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: string | number){
 	logger(`Updating: ${docForm} ${el} with value ${val}...`);
 	let qSdel = `input[name='${el}']`;
 	let qSadd = `[data-field='${el}']`;
@@ -225,7 +227,7 @@ function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: string){
 	newAttribute.value = el;
 	newTag.setAttributeNode(newAttribute)
 	newAttribute = document.createAttribute('value')
-	newAttribute.value = val;
+	newAttribute.value = typeof val === 'string' ? val : val.toString();
 	newTag.setAttributeNode(newAttribute);
 
 	if ( insAfter )
@@ -235,6 +237,50 @@ function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: string){
 
 	
 	logger(`Form update complete.`);
+}
+function saveNewForm(docForm:string) : void {
+
+	console.log('SAVING NEW FORM:');
+	console.log(createListMap);
+
+
+	// rmAndAppendReadonlyFormInputs(docForm,'id',createListMap.get('id'));
+	createList.fields.id.set(createListMap.get('id'))
+	// rmAndAppendReadonlyFormInputs(docForm,'owner',createListMap.get('owner'));
+	createList.fields.owner.set(createListMap.get('owner'))
+	rmAndAppendReadonlyFormInputs(docForm,'created',createListMap.get('created'));
+	rmAndAppendReadonlyFormInputs(docForm,'modified',createListMap.get('modified'));
+	console.log('SAVED NEW FORM:');
+	console.log(createList.fields.value().id?.toString());
+	console.log(createList.fields.value().owner?.toString());
+	console.log(createList.fields.id?.value());
+	console.log(createList.fields.owner?.value());
+
+}
+function createNewForm(docForm:string) : void {
+	let dt = new Date().toISOString();
+
+	let ids : number[] = [];
+	document.querySelectorAll("[data-name='list']").forEach( e => ids.push( parseInt(e?.attributes?.getNamedItem('data-value')?.value as string)));
+	let nextId = Math.max(...ids) + 1;
+
+	logger(`Adding new docForm...`);
+
+	createList.fields.created.set(dt);
+	createListMap.set('created',dt);
+	createList.fields.modified.set(dt);
+	createListMap.set('modified',dt);
+	createList.fields.owner.set(userId);
+	createListMap.set('owner',userId);
+	createList.fields.id.set(nextId);
+	createListMap.set('id',nextId);
+
+	console.log('CREATE LIST MAP:');
+	console.log(createListMap);
+
+
+
+
 }
 
 function restoreUpdateFormStaticValues(docForm:string) : void {
@@ -254,6 +300,14 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 	rmAndAppendReadonlyFormInputs(docForm,'created',btnEvtData.created as string ?? '');
 
 }
+
+// function cancelDialog(de:HTMLDialogElement){
+// 	console.log('Canceling dialog element:');
+// 	console.log(de);
+// 	updateListModalState.value = false;
+// 	de.close();
+// 	console.log('done');
+// }
 </script>
 
 
@@ -351,7 +405,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 
 
 <header>
-	<button id="newList" onclick={() => createListDialog?.showModal()}>New List</button>
+	<button id="newList" onclick={() => {createNewForm('createListForm'); createListModal.value = true}}>New List</button>
 </header>
 
 <main>
@@ -378,7 +432,8 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 		>
 			<p>{btnEvtData?.title ?? "No Title Found"}</p>
 			<form {...listUpdate} id="updateListForm" name="updateListForm">
-				<p data-field="id">ID: {btnEvtData?.id || ""}</p>
+				<label for="title">Title:</label>
+				<input {...title.as('text')} id="title" name="title" type="text" value={btnEvtData?.title || '' } />				<p data-field="id">ID: {btnEvtData?.id || ""}</p>
 				<!-- <input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} />				 --> 
 				<!-- <input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} /> -->
 				<!-- <input {...id.as(['hidden', btnEvtData.id])} name="id" type="hidden" value={btnEvtData.id} />				 -->
@@ -391,8 +446,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<p data-field="created">Created: {btnEvtData?.created || ""}</p>
 				<!-- <input {...created.as('text')} name="created" type="hidden" value={btnEvtData?.created} /> -->
 				<p data-field="modified">Modified: {btnEvtData?.modified || ""}</p>
-				<label for="title">Title:</label>
-				<input {...title.as('text')} id="title" name="title" type="text" value={btnEvtData?.title || '' } />
+
 				<label for="editable">Editable:
 					{#if ( btnEvtData?.editable === true ) }
 						<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={true} defaultChecked={true} checked={true} />
@@ -403,25 +457,25 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<section>
 					<!-- <label for="items">Items:</label> -->
 					<p data-field="items">{btnEvtData?.items || ""}</p>
-					<h3>Items:</h3>
-					{#if btnEvtData?.items }
-						<h3>Item Type: {typeof btnEvtData.items}</h3>
-						<h3>Item Count: {btnEvtData.items.length}</h3>
+					{#if btnEvtData?.items }						
+						<h3>Items: {btnEvtData.items.length}</h3>
 						{#each btnEvtData?.items as i, iidx}
-							<label for="id_{i?.id}">ID: {i?.id}</label>
-							<!-- <input name="item_id_{i?.id}" type="readonly" value={i.id || ''} /> -->
-							<input {...items[iidx].id.as('number')} id="id_{i?.id}" name="id_{i?.id}" type="hidden" value={i?.id} />
+								<label for="id_{i?.id}">ID: {i?.id}</label>
+								<!-- <input name="item_id_{i?.id}" type="readonly" value={i.id || ''} /> -->
+								<input {...items[iidx].id.as('number')} id="id_{i?.id}" name="id_{i?.id}" type="hidden" value={i?.id} />
 
-							<label for="created_{i?.id}">Created: {i?.created}</label>
-							<input {...items[iidx].created.as('text')} name="created_{i?.id}" id="created_{i?.id}"  type="hidden" value={i?.created || ''} />
-							<label for="modified_{i?.id}">Modified: {i?.modified}</label>
-							<label for="item_txt_{i?.id}">Todo:</label>
-							<input {...items[iidx].text.as('text')} name="item_txt_{i?.id}" id="item_txt_{i?.id}" type="textarea" value={i.text || ''} />
-							<label for="item_editable_{i?.id}">Editable:</label>
-							<!-- <input {...i?.editable} name="item_editable" type="checkbox" value={i.editable || ''} /> -->
-							<input {...items[iidx].editable?.as('checkbox')} name="item_editable_{i?.id}" id="item_editable_{i?.id}" type="text" />
-						{/each}
-					{/if}
+								<label for="created_{i?.id}">Created: {i?.created}</label>
+								<input {...items[iidx].created.as('text')} name="created_{i?.id}" id="created_{i?.id}"  type="hidden" value={i?.created || ''} />
+								<label for="modified_{i?.id}">Modified: {i?.modified}</label>
+								<label for="item_txt_{i?.id}">Todo:</label>
+								<input {...items[iidx].text.as('text')} name="item_txt_{i?.id}" id="item_txt_{i?.id}" type="textarea" value={i.text || ''} />
+								<label for="item_editable_{i?.id}">Editable:</label>
+								<!-- <input {...i?.editable} name="item_editable" type="checkbox" value={i.editable || ''} /> -->
+								<input {...items[iidx].editable?.as('checkbox')} name="item_editable_{i?.id}" id="item_editable_{i?.id}" type="text" />
+							{/each}
+						{:else}
+							<p>No items found</p>
+						{/if}
 				</section>
 				<!-- <button onclick={()=>updateListModalState.value = false && this.close()}>OK</button> -->
 				<!--
@@ -431,7 +485,8 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<!-- <button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].nodeValue = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].nodeValue = btnEvtData.owner as string}}>OK</button> -->
 				 <!-- TODO:  In the meantime, move these cleanups to their own function where static values from both the main form and from the individual form items can be saved back to the form -->
 				<!-- <button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;}}>OK</button> -->
-				<button onclick={()=>{restoreUpdateFormStaticValues('updateListForm')}}>OK</button>
+				<button type="button" onclick={()=>{updateListModalState.value = false;}}>Cancel</button>
+				<button onclick={()=>{restoreUpdateFormStaticValues('updateListForm')}}>Save</button>
 			</form>
 		</dialog>
 		<form {...deleteList} name="deleteListForm" id="deleteListForm"></form>
@@ -443,16 +498,16 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<!-- {#each await manager.loadListsFromRmtQry() as list (list)} -->
 				{#each await getLists(userId) as list (list)}
 					<div data-name="list" data-value={list.id} data-list={list.id}>
-						<p data-name="id" data-value={list.id} data-list_id={list.id}>{list.id}</p>
 						<p data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</p>
+						<p data-name="id" data-value={list.id} data-list_id={list.id}>{list.id}</p>
 						<p data-name="created" data-value={list.created} data-list_created={list.created}>{list.created}</p>
 						<p data-name="modified" data-value={list.modified} data-list_modified={list.modified}>{list.modified}</p>
 						<p data-name="owner" data-value={list.owner} data-list_owner={list.owner}>{list.owner}</p>
 						<label data-name="editable" data-value={list.editable} data-list_editable={list.editable}>Editable:
 							{#if ( list?.editable ) }
-								<input type='checkbox' defaultChecked={true} value={true} />
+								<input type='checkbox' defaultChecked={true} value={true} checked={true} />
 							{:else}
-								<input type='checkbox' defaultChecked={false} value={false} />
+								<input type='checkbox' defaultChecked={false} value={false} checked={false} />
 							{/if}
 						 </label>
 						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}">DELETE</button>
@@ -483,33 +538,41 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 		</section>
 
 		<!-- see https://svelte.dev/tutorial/kit/other-handlers -->
-		<dialog id="createListModalDialog" bind:this={createListDialog} onclose={() => (createListModal.value = false)}>
-			<form {...createList} enctype="multipart/form-data">
+		<dialog id="createListModalDialog" bind:this={createListDialog} onclose={() => {(createListModal.value = false); console.log(createList)}}>
+			<form {...createList} id="createListForm" name="createListForm" enctype="multipart/form-data">
 				<h2>List Entry</h2>
 				<label>
 					<h2>Title</h2>
-					<input {...title.as("text")} />
+					<input {...title.as("text")} name="title" data-field="title" type="text" />
 				</label>
 				<label>
 					Editable
-					<input {...editable.as("checkbox")} />
+					<input {...editable.as("checkbox")} name="editable" data-field="editable" type="checkbox" defaultChecked={createListMap.get('editable')} checked={createListMap.get('editable')} value={createListMap.get('editable')} />
 				</label>
-				<label>
+				<!-- <label>
 					Owner
 					<input {...owner.as("number")} />
-				</label>
-				<label>
+				</label> -->
+				<input {...owner} name="owner" data-field="owner" type="hidden" value={userId} />
+				<input {...id} name="id" data-field="id" type="hidden" value={createListMap.get('id')} />
+				<!-- <p data-field="owner">Owner: {userId}</p> -->
+				<!-- <label>
 					Created
 					<input {...created.as("text")} />
-				</label>
-				<label>
+				</label> -->
+				<!-- <p data-field="created">Created: {(new Date().toISOString())}</p> -->
+				<input {...created.as("text")} name="created" data-field="created" type="hidden" value={createListMap.get('created')} />
+				<input {...modified.as("text")} name="modified" data-field="modified" type="hidden" value={createListMap.get('modified')} />
+
+				<!-- <label>
 					ID
 					<input {...id.as("number")} />
-				</label>
+				</label> -->
+				<!-- <p data-field="id">ID: {(new Date().toISOString())}</p>
 				<label>
 					DBID
 					<input {...dbid.as("text")} />
-				</label>
+				</label> -->
 				<p>
 					Items
 					<label>
@@ -552,7 +615,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 
 				<button type="reset">Clear</button>
 				<button
-					type="reset"
+					type="button"
 					onclick={() => {
 						createListDialog?.close();
 						createListModal.value = false;
@@ -561,6 +624,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<button
 					type="submit"
 					onclick={() => {
+						saveNewForm('createListForm');
 						createListDialog?.close();
 						createListModal.value = false;
 					}}>Save</button

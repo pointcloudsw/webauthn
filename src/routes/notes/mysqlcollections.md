@@ -92,3 +92,10 @@ for ( let d of docs ) { console.log(...d); console.log(d._id) };
 let i = -1;
 for ( let d of docs ) { if ( ++i % 2 === 0 ) c.modify('_id = :id').set('editable',false).bind('id',d._id).execute(); }
 ```
+
+## Find max maximum value of id in collection
+```js
+c.find().fields('id').sort(['id desc']).limit(1).execute().fetchOne().id;
+
+c.find('owner = :own').fields('id').sort(['id desc']).limit(1).bind('own',1).execute().fetchOne().id;
+```

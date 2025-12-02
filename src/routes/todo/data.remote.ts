@@ -23,9 +23,9 @@ const list = v.object({
 	modified: v.optional(v.string()),
 	dbid: v.optional(v.string()),
 	editable: v.optional(v.boolean(), true),
-	id: v.optional(v.number(), -1),
+	id: v.optional(v.union([v.string(),v.number()]), -1),
 	items: v.optional(v.array(v.object({created: v.optional(v.string()),modified: v.optional(v.string()),dbid: v.optional(v.string()),editable: v.optional(v.boolean(), true),flag: v.optional(v.number()),id: v.optional(v.number()),priority: v.optional(v.number()),sequence: v.optional(v.number()),status: v.optional(v.number()),text: v.optional(v.string())}))),
-	owner: v.optional(v.number(), -1),
+	owner: v.optional(v.union([v.string(),v.number()]), -1),
 	title: v.optional(v.string(), '')
 });
 // const listKey = v.object({ id: v.number(), owner: v.number()});
@@ -39,13 +39,17 @@ export const getList = query( 'unchecked', async qryFltr => {
 */
 
 export const createList=form(list, async data => {
-	let { created, dbid, editable, id, items, owner, title } = data;
-	const result = await addList({created, dbid, editable, id, items, owner, title});
+	console.log('CREATE LIST DATA:');
+	console.log(data);
+	let { created, dbid, editable, id, items, modified, owner, title } = data;
+	id = Number(id);
+	owner = Number(owner);
+	const result = await addList({created, dbid, editable, id, modified, items, owner, title});
 
 	logger(`Result: ${result.toString()}`);
 	if ( result ){
 		logger(`Refreshing...`);
-		await getLists(owner).refresh();
+		await getLists(owner as number).refresh();
 		logger(`Done.`);
 
 	}
