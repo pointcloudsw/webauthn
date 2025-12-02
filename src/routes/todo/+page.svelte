@@ -244,20 +244,22 @@ function saveNewForm(docForm:string) : void {
 	console.log(createListMap);
 
 
-	// rmAndAppendReadonlyFormInputs(docForm,'id',createListMap.get('id'));
-	createList.fields.id.set(createListMap.get('id'))
-	// rmAndAppendReadonlyFormInputs(docForm,'owner',createListMap.get('owner'));
-	createList.fields.owner.set(createListMap.get('owner'))
+	rmAndAppendReadonlyFormInputs(docForm,'id',createListMap.get('id'));
 	rmAndAppendReadonlyFormInputs(docForm,'created',createListMap.get('created'));
 	rmAndAppendReadonlyFormInputs(docForm,'modified',createListMap.get('modified'));
+	// createList.fields.id.set(createListMap.get('id'));
+	rmAndAppendReadonlyFormInputs(docForm,'owner',createListMap.get('owner'));
+	createList.fields.owner.set(createListMap.get('owner'));
 	console.log('SAVED NEW FORM:');
 	console.log(createList.fields.value().id?.toString());
 	console.log(createList.fields.value().owner?.toString());
 	console.log(createList.fields.id?.value());
 	console.log(createList.fields.owner?.value());
 
+	console.log(createList.fields);
 }
 function createNewForm(docForm:string) : void {
+	createListMap.clear();
 	let dt = new Date().toISOString();
 
 	let ids : number[] = [];
@@ -553,8 +555,8 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 					Owner
 					<input {...owner.as("number")} />
 				</label> -->
-				<input {...owner} name="owner" data-field="owner" type="hidden" value={userId} />
-				<input {...id} name="id" data-field="id" type="hidden" value={createListMap.get('id')} />
+				<input {...owner.as("number")} name="owner" data-field="owner" data-value={createListMap.get('owner')} type="hidden" value={createListMap.get('owner')} />
+				<input {...createList.fields.id.as("number")} name="id" data-field="id" data-value={createListMap.get('id')} type="hidden" value={createListMap.get('id')} />
 				<!-- <p data-field="owner">Owner: {userId}</p> -->
 				<!-- <label>
 					Created
