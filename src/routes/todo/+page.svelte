@@ -161,10 +161,7 @@ function populateListModal(listId:number){
 
 			btnEvtData.title = list?.querySelector(`[data-list_title]`)?.textContent;
 
-			edt = list?.querySelector(`[data-list_editable]`)?.attributes.getNamedItem('value')?.value?.toLocaleLowerCase();
-
-			btnEvtData.editable = edt === 'true' ? true : false;
-
+			btnEvtData.editable = list?.querySelector(`[data-list_editable]`)?.attributes.getNamedItem('data-value')?.nodeValue?.toLocaleLowerCase() === 'true' ? true : false;
 
 			listItems = list?.querySelector(`[data-list-items]`);
 
@@ -396,12 +393,13 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<p data-field="modified">Modified: {btnEvtData?.modified || ""}</p>
 				<label for="title">Title:</label>
 				<input {...title.as('text')} id="title" name="title" type="text" value={btnEvtData?.title || '' } />
-				<label for="editable">Editable:</label>
-					<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={false} />
-
-				{#if btnEvtData.editable}
-					<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={true} checked />
-				{/if}
+				<label for="editable">Editable:
+					{#if ( btnEvtData?.editable === true ) }
+						<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={true} defaultChecked={true} checked={true} />
+					{:else}
+						<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={false} defaultChecked={false} checked={false} />
+					{/if}
+				</label>
 				<section>
 					<!-- <label for="items">Items:</label> -->
 					<p data-field="items">{btnEvtData?.items || ""}</p>
@@ -450,14 +448,13 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 						<p data-name="created" data-value={list.created} data-list_created={list.created}>{list.created}</p>
 						<p data-name="modified" data-value={list.modified} data-list_modified={list.modified}>{list.modified}</p>
 						<p data-name="owner" data-value={list.owner} data-list_owner={list.owner}>{list.owner}</p>
-						<p data-name="editable" data-value={list.editable} data-list_editable={list.editable}>{list.editable}</p>
-						<label>
-						{#if ( list?.editable ) }
-							<input type='checkbox' defaultChecked={true} value={true} />
-						{:else}
-							<input type='checkbox' defaultChecked={false} value={false} />
-						{/if}
-						 Editable</label>
+						<label data-name="editable" data-value={list.editable} data-list_editable={list.editable}>Editable:
+							{#if ( list?.editable ) }
+								<input type='checkbox' defaultChecked={true} value={true} />
+							{:else}
+								<input type='checkbox' defaultChecked={false} value={false} />
+							{/if}
+						 </label>
 						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}">DELETE</button>
 
 						<button name="updateListFormButton" onclick={() => { updateListModalState.value = true;populateListModal(Number(list?.id)) as undefined; }}>Edit List</button>

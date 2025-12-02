@@ -87,8 +87,7 @@ This approach works because X DevAPI treats documents as JSON objects that you c
 ## Reading and manipulating NoSQL Record Sets and Document Collections
 ```js
 docs = c.find().execute().fetchAll();
-for ( let d of docs ) { console.log(...d) };
-for ( let d of docs ) { console.log(d._id) }
+for ( let d of docs ) { console.log(...d); console.log(d._id) };
 
 let i = -1;
 for ( let d of docs ) { if ( ++i % 2 === 0 ) c.modify('_id = :id').set('editable',false).bind('id',d._id).execute(); }
