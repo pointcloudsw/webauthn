@@ -2,7 +2,6 @@
 	import { logger } from "$lib/logger";
 	import { createList, getLists, deleteList, listUpdate } from "./data.remote";
 	import type { BL, DT, ID, TXT } from '$lib/list/types'
-	import Layout from "../+layout.svelte";
 
 	let { data } = $props();
 	let { userId, username } = data;
@@ -225,6 +224,7 @@ function setMapValues( destMap:Map<string, formMapValue>, kvPairs:{k:string,v:an
 }
 
 function createNewForm(docForm:string) : void {
+	// TODO:  Since user may have multiple concurrent sessions, will need to create next ID not on local list of lists, but on max value from remote database as system of record
 
 	logger(`Adding new docForm...`);
 
@@ -489,11 +489,24 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 	grid: auto / 1fr;
 } */
 
+	dialog {
+		inline-size: 85%;
+		block-size: 85%;
+		
+	}
+	dialog::backdrop {
+		background: linear-gradient(130deg, #ff7a18, #af002d 41.07%, #319197 76.05%);
+		position: fixed;
+		top: 0px;
+	}
+
+
 	main {
 		display: grid;
 		/* grid: 1fr 1fr / auto; */
 		/* grid: auto; */
 	}
+	
 	form {
 		display: grid;
 	}
@@ -525,4 +538,14 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 		/* grid-auto-flow: row; */
 		border: 2px solid red;
 	}
+	/* :global body:has(dialog:focus-within) *:not(dialog *, dialog, form, form *) { */
+	/* :global html:has(dialog:focus-within) * :not(dialog *, dialog, form, form *) {
+		background: black;
+		color: black;
+	} */
+	/* :global html:has(dialog:focus-within) body { */
+	:global html:has(dialog[open]) body {
+		overflow: hidden;
+	}
+
 </style>

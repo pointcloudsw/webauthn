@@ -39,8 +39,6 @@ export async function getListsByUser(owner: string | number, listId?: string | n
     let qry = `owner = :uid`;
     let parms = Object.assign({}, { uid: owner });
     
-    console.log('Getting lists by user and/or listId...');
-
     if ( listId ) {
         qry += ` AND id = :lid`;
         parms = Object.assign(parms, { lid: listId });
@@ -49,12 +47,6 @@ export async function getListsByUser(owner: string | number, listId?: string | n
     if (owner){
 
         if ( !adb.db?.isConnected() ) await dbConnect();
-
-        console.log(owner,listId);
-        console.log('Qry:');
-        console.log(qry);
-        console.log('Bind parms:');
-        console.log(parms);
 
         if ( adb.db )
             lists = await adb.db.find(
@@ -66,13 +58,6 @@ export async function getListsByUser(owner: string | number, listId?: string | n
                     sort: ["created desc"]
                 }
             );
-        
-        if ( adb.db )
-            console.log('DATABASE CONNECTED, LISTS:')
-        else
-            console.log('DATABASE NOT CONNECTED, LISTS:')
-        console.log(lists)
-        console.log('User:', owner)
     }
     return lists;
 }
