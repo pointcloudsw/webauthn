@@ -11,9 +11,17 @@ import { logger } from '$lib/exports';
 
 
 
-export const getLists = query( v.number(), async userId => {
+export const getLists = query( v.object( { userId: v.union( [ v.number(), v.string() ] ), listId: v.optional( v.union([v.string(),v.number()]))} ), async qry => {
+    console.log('Getting lists by user and/or listId...');
+    console.log('qry:');
+    console.log(qry);
 
-	const lists = await getListsByUser(userId) as unknown as List[];
+	let { userId, listId = '' } = qry;
+
+	if ( !userId ) return [] as List[];
+
+	const lists = await getListsByUser(userId, listId) as unknown as List[];
+	
 	return lists;
 });
 
@@ -49,7 +57,7 @@ export const createList=form(list, async data => {
 	logger(`Result: ${result.toString()}`);
 	if ( result ){
 		logger(`Refreshing...`);
-		await getLists(owner as number).refresh();
+		await getLists({userId: owner as number}).refresh();
 		logger(`Done.`);
 
 	}
@@ -75,7 +83,7 @@ export const deleteList=form('unchecked', async data => {
 	// logger(`Result: ${result.toString()}`);
 	if ( result ){
 		logger(`Refreshing...`);
-		await getLists(owner).refresh();
+		await getLists({userId: owner}).refresh();
 		logger(`Done.`);
 
 	}

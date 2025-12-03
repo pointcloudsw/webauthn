@@ -1,32 +1,13 @@
 <script lang="ts">
-	import { ValidationError } from "$lib/list/verror";
-	import { validate } from "$lib/list/validate";
-
 	import { logger } from "$lib/logger";
 	import { createList, getLists, deleteList, listUpdate } from "./data.remote";
-	// import * as v from 'valibot';
 	import type { BL, DT, ID, TXT } from '$lib/list/types'
-	// import { ListManager } from "$lib/list/ListManager.svelte";
-	import { ListEntity } from "$lib/list/ListEntity.svelte";
+	import Layout from "../+layout.svelte";
 
 	let { data } = $props();
 	let { userId, username } = data;
 
-	// type ID = number | string | undefined;
-	// type DT = number | string | Date | undefined;
-	// type BL = boolean | number | string | undefined;
-	// type TXT = string | undefined;
-
-	// const manager = new ListManager(userId);
-	// let manager: ListManager = $state(new ListManager(userId));
-
-	// let manager: ListManager;
-	// manager = $state(new ListManager(userId));
-
-	// const manager: ListManager = new ListManager(userId.toString());
-	// manager.loadListsFromRmtQry();
-	// manager.getAllLists().forEach(l => console.log(l));
-	// console.log('LISTS');
+	type formMapValue = boolean | number | string;
 	
 	type EventDataSetItem = {
 		id: ID | number | undefined; // system generated
@@ -45,14 +26,6 @@
 		items: EventDataSetItem[] | undefined; // client may add, remove, change or rearrange items
 	};
 
-	let domEvtStrMap: DOMStringMap = $state() as DOMStringMap;
-	// let evtDataSetItem: EventDataSetItem = $state({}) as EventDataSetItem;
-	// const evtDataSetItem: EventDataSetItem = {
-	// 	id: undefined,
-	// 	created: undefined,
-	// 	editable: undefined,
-	// 	text: undefined
-	// };
 	let evtDataSetItem: EventDataSetItem = $state({
 		id: undefined,
 		created: undefined,
@@ -61,15 +34,6 @@
 		text: undefined
 	});
 
-	// let btnEvtData: EventDataSet = $state({}) as EventDataSet;
-	// const btnEvtData: EventDataSet = {
-	// 	id: undefined,
-	// 	created: undefined,
-	// 	editable: undefined,
-	// 	owner: undefined,
-	// 	title: undefined,
-	// 	items: [ evtDataSetItem ]
-	// };
 	let btnEvtData: EventDataSet = $state({
 		id: undefined,
 		created: undefined,
@@ -80,11 +44,7 @@
 		items: [ evtDataSetItem ]
 	});
 
-	// createList.fields.created.set(new Date().toString());
-	// createList.fields.editable.set(true);
-	// createList.fields.owner.set(userId);
-
-	const createListMap = new Map();
+	const listMap = new Map();
 
 	const { created, modified, dbid, editable, id, items, owner, title } = createList.fields;
 
@@ -98,27 +58,35 @@
 	let list: HTMLElement | null;
 	let listItems: HTMLElement | null;
 	let qS = "";
-	// let listId: number = $state(-1);
-	// ?
-	let listItem = "";
 	let idx = '';
 
 	$effect(() => {
 		if (updateListModalState?.value === true) {
-
-
 			updateListDialog?.showModal();
 		} else {
 			updateListDialog?.close();
 		}
 	});
-	// $effect(()=>{$inspect(btnEvtData);});
 
 // TODO: find a better solution to populating the list edit modal, that still adheres to the page as data source principle
-function populateListModal(listId:number){
+async function populateListModal(listId:number){
 	// console.log(`\n\nPopulating List Modal\n\nButton Event Data with data from List #:${listId}\n`);
-	let edt;
+	const localList = await getLists({userId, listId});
 	
+	console.log(localList[0]);
+
+	/* TODO:
+		Query local IndexedDB to populate list update form
+		then push update to DB
+		if no local db, then query DB directly, if no DB, then query page directly to populate form
+		create / update local DB and queue changes for remote database when network is available, ensuring to version data for diff'ing
+
+		first step is to simply query remote DB to populate form, then advanced features can come later
+
+		also add logic to reconcile / create list id based on database rather than just on local page data
+	*/
+
+
 	if ( btnEvtData ) {
 	// console.log(`\n\nClearing Button Event Data\n\n`);
 		btnEvtData.id = undefined;
@@ -211,7 +179,7 @@ function populateListModal(listId:number){
 
 
 
-function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: string | number){
+function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: formMapValue){
 	logger(`Updating: ${docForm} ${el} with value ${val}...`);
 	let qSdel = `input[name='${el}']`;
 	let qSadd = `[data-field='${el}']`;
@@ -235,66 +203,63 @@ function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: string | nu
 	else
 		document.forms[docForm as any].appendChild(newTag);	
 
-	
 	logger(`Form update complete.`);
 }
-function saveNewForm(docForm:string) : void {
 
-	console.log('SAVING NEW FORM:');
-	console.log(createListMap);
+// function saveNewForm(docForm:string) : void {
 
+// 	[ 'created', 'id', 'modified', 'owner' ].forEach( ( field:string ) => rmAndAppendReadonlyFormInputs( docForm,field,listMap.get(field) ) );
 
-	rmAndAppendReadonlyFormInputs(docForm,'id',createListMap.get('id'));
-	rmAndAppendReadonlyFormInputs(docForm,'created',createListMap.get('created'));
-	rmAndAppendReadonlyFormInputs(docForm,'modified',createListMap.get('modified'));
-	// createList.fields.id.set(createListMap.get('id'));
-	rmAndAppendReadonlyFormInputs(docForm,'owner',createListMap.get('owner'));
-	createList.fields.owner.set(createListMap.get('owner'));
-	console.log('SAVED NEW FORM:');
-	console.log(createList.fields.value().id?.toString());
-	console.log(createList.fields.value().owner?.toString());
-	console.log(createList.fields.id?.value());
-	console.log(createList.fields.owner?.value());
+// }
 
-	console.log(createList.fields);
+function updateFormValues( srcMap:Map<string, formMapValue>, form: { name:string, fields:string[] } ) : void {
+
+	form.fields.forEach( ( field:string ) => rmAndAppendReadonlyFormInputs( form.name, field, srcMap.get(field) ?? `Warning: '${field}' field not found` ) );
+
 }
-function createNewForm(docForm:string) : void {
-	createListMap.clear();
-	let dt = new Date().toISOString();
 
-	let ids : number[] = [];
-	document.querySelectorAll("[data-name='list']").forEach( e => ids.push( parseInt(e?.attributes?.getNamedItem('data-value')?.value as string)));
-	let nextId = Math.max(...ids) + 1;
+function setMapValues( destMap:Map<string, formMapValue>, kvPairs:{k:string,v:any}[] ) : void {
+	kvPairs.forEach( (kv:any) => {
+		destMap.set(kv.k, kv.v);
+	} );
+}
+
+function createNewForm(docForm:string) : void {
 
 	logger(`Adding new docForm...`);
 
-	createList.fields.created.set(dt);
-	createListMap.set('created',dt);
-	createList.fields.modified.set(dt);
-	createListMap.set('modified',dt);
-	createList.fields.owner.set(userId);
-	createListMap.set('owner',userId);
-	createList.fields.id.set(nextId);
-	createListMap.set('id',nextId);
+	let dt = new Date().toISOString();
 
-	console.log('CREATE LIST MAP:');
-	console.log(createListMap);
+	listMap.clear();
 
+	setMapValues(listMap, [
+		{ k: 'created', v: dt },
+		{ k: 'modified', v: dt },
+		{ k: 'id', v: Math.max( ...[ ...document.querySelectorAll("[data-name='list']") ].map( c => parseInt( c?.attributes?.getNamedItem('data-value')?.value as string ) ) ) + 1 },
+		{ k: 'owner', v: userId }
+	]);
 
-
+	// listMap.set('created',dt);
+	// listMap.set('modified',dt);
+	// listMap.set('owner',userId);
+	// listMap.set('id', Math.max( ...[ ...document.querySelectorAll("[data-name='list']") ].map( c => parseInt( c?.attributes?.getNamedItem('data-value')?.value as string ) ) ) + 1 );
 
 }
 
 function restoreUpdateFormStaticValues(docForm:string) : void {
 
 	logger(`Updating docForm...`);
-	console.log(document.forms[docForm as any]);
 
 	// List Modified Date
 	// TODO:  update modified date only when user actually changed something in the list or in list items, if user escaped out or hit cancel, then modified date should not be updated, but if 'Save' button was activated and pressed, then modified date should be updated
 
 	// when written, remember to remove these input fields from the dialog input form as they'll be manually added to the form inside this method instead
 
+	/*
+		Lines:
+			populateListModal: 74, 104
+			restoreUpdateFormStaticValues: 237
+	*/
 
 	rmAndAppendReadonlyFormInputs(docForm,'modified',(new Date()).toISOString());
 	rmAndAppendReadonlyFormInputs(docForm,'id',btnEvtData.id as string);
@@ -303,108 +268,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 
 }
 
-// function cancelDialog(de:HTMLDialogElement){
-// 	console.log('Canceling dialog element:');
-// 	console.log(de);
-// 	updateListModalState.value = false;
-// 	de.close();
-// 	console.log('done');
-// }
 </script>
-
-
- <!--
-// Got it — you want a SvelteKit + Valibot example where dynamic fields are validated in real-time on the client before submission.
-// Here’s a concise, working pattern you can adapt.
-
-// Example: Real-time Validation of Dynamic Fields with Valibot in SvelteKit
-// Svelte<script lang="ts">
-// 	import { writable, derived } from 'svelte/store';
-// 	import { object, string, minLength, email, parse } from 'valibot';
-
-// 	// Dynamic form fields store
-// 	const fields = writable([
-// 		{ name: 'email', value: '' },
-// 		{ name: 'username', value: '' }
-// 	]);
-
-// 	// Valibot schema
-// 	const schema = object({
-// 		email: string([email('Invalid email format')]),
-// 		username: string([minLength(3, 'Username must be at least 3 characters')])
-// 	});
-
-// 	// Errors store
-// 	const errors = writable<Record<string, string>>({});
-
-// 	// Validate whenever fields change
-// 	fields.subscribe(($fields) => {
-// 		const data = Object.fromEntries($fields.map(f => [f.name, f.value]));
-// 		try {
-// 			parse(schema, data);
-// 			errors.set({});
-// 		} catch (err: any) {
-// 			const errMap: Record<string, string> = {};
-// 			err.issues?.forEach((issue: any) => {
-// 				errMap[issue.path[0]] = issue.message;
-// 			});
-// 			errors.set(errMap);
-// 		}
-// 	});
-
-// 	// Derived store to check if form is valid
-// 	const isValid = derived(errors, $errors => Object.keys($errors).length === 0);
-
-// 	function updateField(index: number, value: string) {
-// 		fields.update(f => {
-// 			f[index].value = value;
-// 			return [...f];
-// 		});
-// 	}
-
-// 	function submitForm() {
-// 		if ($isValid) {
-// 			alert('Form submitted!');
-// 		}
-// 	}
-// </script>
-
-// <form on:submit|preventDefault={submitForm}>
-// 	{#each $fields as field, i}
-// 		<div>
-// 			<label>{field.name}</label>
-// 			<input
-// 				type="text"
-// 				bind:value={field.value}
-// 				on:input={(e) => updateField(i, e.target.value)}
-// 			/>
-// 			{#if $errors[field.name]}
-// 				<p class="error">{$errors[field.name]}</p>
-// 			{/if}
-// 		</div>
-// 	{/each}
-
-// 	<button type="submit" disabled={!$isValid}>Submit</button>
-// </form>
-
-// <style>
-// 	.error { color: red; font-size: 0.9em; }
-// </style>
-
-
-// How it works:
-
-// fields store holds dynamic form fields (could be generated from API or user input).
-// Valibot schema defines validation rules.
-// fields.subscribe runs validation on every change, updating errors in real-time.
-// isValid derived store enables/disables the submit button.
-// No server round-trip — all validation happens client-side before submission.
-
-
-// If you want, I can extend this so new fields can be added dynamically and still be validated instantly. That would make it perfect for forms where users can add/remove inputs on the fly.
-// Do you want me to extend it that way?
-  -->
-
 
 <header>
 	<button id="newList" onclick={() => {createNewForm('createListForm'); createListModal.value = true}}>New List</button>
@@ -412,17 +276,6 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 
 <main>
 	{#if userId}
-		<!-- <dialog id="updateListDialog"
-			bind:this={updateListDialog}
-			onbeforetoggle={(e:any)=>{ 
-				if ( e.newState === 'open' ) populateListModal(listId) as undefined}}
-			onclose={()=>{
-				if ( updateListModalState.value === true )
-					updateListModalState.value = false;
-				console.log('Closing dialog and completing submission')
-			}}
-			onsubmit={() => {updateListModalState.value = false;}}
-		> -->
 		<dialog id="updateListDialog"
 			bind:this={updateListDialog}
 			onclose={()=>{
@@ -433,20 +286,19 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 			onsubmit={() => {updateListModalState.value = false;}}
 		>
 			<p>{btnEvtData?.title ?? "No Title Found"}</p>
+
 			<form {...listUpdate} id="updateListForm" name="updateListForm">
+
 				<label for="title">Title:</label>
-				<input {...title.as('text')} id="title" name="title" type="text" value={btnEvtData?.title || '' } />				<p data-field="id">ID: {btnEvtData?.id || ""}</p>
-				<!-- <input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} />				 --> 
-				<!-- <input {...id.as('number')} name="id" type="hidden" value={btnEvtData?.id} /> -->
-				<!-- <input {...id.as(['hidden', btnEvtData.id])} name="id" type="hidden" value={btnEvtData.id} />				 -->
-				 <!-- {@debug listUpdate} -->
-				<!-- <input {...id.as(btnEvtData.id) } name="id" type="hidden" />				 -->
+
+				<input {...title.as('text')} id="title" name="title" type="text" value={btnEvtData?.title || '' } />				
+				
+				<p data-field="id">ID: {btnEvtData?.id || ""}</p>
+
 				<p data-field="owner">Owner: {btnEvtData.owner}</p>
-				<!-- <input {...owner.as('number')} name="owner" type="hidden" value={btnEvtData?.owner} /> -->
-				<!-- <input {...owner.value()} name="owner" type="hidden" value={btnEvtData?.owner} /> -->
-				<!-- <input {...listUpdate.fields.owner.set(btnEvtData.owner as number)} name="owner" type="hidden" />				 -->
+
 				<p data-field="created">Created: {btnEvtData?.created || ""}</p>
-				<!-- <input {...created.as('text')} name="created" type="hidden" value={btnEvtData?.created} /> -->
+
 				<p data-field="modified">Modified: {btnEvtData?.modified || ""}</p>
 
 				<label for="editable">Editable:
@@ -456,23 +308,28 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 						<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={false} defaultChecked={false} checked={false} />
 					{/if}
 				</label>
+
 				<section>
-					<!-- <label for="items">Items:</label> -->
+
 					<p data-field="items">{btnEvtData?.items || ""}</p>
+
 					{#if btnEvtData?.items }						
 						<h3>Items: {btnEvtData.items.length}</h3>
 						{#each btnEvtData?.items as i, iidx}
 								<label for="id_{i?.id}">ID: {i?.id}</label>
-								<!-- <input name="item_id_{i?.id}" type="readonly" value={i.id || ''} /> -->
+
 								<input {...items[iidx].id.as('number')} id="id_{i?.id}" name="id_{i?.id}" type="hidden" value={i?.id} />
 
 								<label for="created_{i?.id}">Created: {i?.created}</label>
+
 								<input {...items[iidx].created.as('text')} name="created_{i?.id}" id="created_{i?.id}"  type="hidden" value={i?.created || ''} />
+
 								<label for="modified_{i?.id}">Modified: {i?.modified}</label>
+
 								<label for="item_txt_{i?.id}">Todo:</label>
 								<input {...items[iidx].text.as('text')} name="item_txt_{i?.id}" id="item_txt_{i?.id}" type="textarea" value={i.text || ''} />
+
 								<label for="item_editable_{i?.id}">Editable:</label>
-								<!-- <input {...i?.editable} name="item_editable" type="checkbox" value={i.editable || ''} /> -->
 								<input {...items[iidx].editable?.as('checkbox')} name="item_editable_{i?.id}" id="item_editable_{i?.id}" type="text" />
 							{/each}
 						{:else}
@@ -483,12 +340,12 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<!--
 					TODO: Relocate the onclick form value corrections to either client form validation or to the listUpdate remote function 
 				-->
-				<!-- <button>OK</button> -->
-				<!-- <button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].nodeValue = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].nodeValue = btnEvtData.owner as string}}>OK</button> -->
-				 <!-- TODO:  In the meantime, move these cleanups to their own function where static values from both the main form and from the individual form items can be saved back to the form -->
-				<!-- <button onclick={()=>{document.forms['updateListForm' as any].elements['id' as any].attributes['value' as any].value = btnEvtData.id as string; document.forms['updateListForm' as any].elements['owner' as any].attributes['value' as any].value = btnEvtData.owner as string;}}>OK</button> -->
+
 				<button type="button" onclick={()=>{updateListModalState.value = false;}}>Cancel</button>
-				<button onclick={()=>{restoreUpdateFormStaticValues('updateListForm')}}>Save</button>
+
+				<!-- <button onclick={ () => { updateFormValues( { name: 'updateListForm', fields: [ 'created', 'id', 'modified', 'owner' ] } ) } } >Save</button> -->
+				<button onclick={()=>{ restoreUpdateFormStaticValues('updateListForm')}}>Save</button>
+
 			</form>
 		</dialog>
 		<form {...deleteList} name="deleteListForm" id="deleteListForm"></form>
@@ -497,8 +354,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 			<h1>Todo Lists</h1>
 
 			<div class="todo-list">
-				<!-- {#each await manager.loadListsFromRmtQry() as list (list)} -->
-				{#each await getLists(userId) as list (list)}
+				{#each await getLists({userId}) as list (list)}
 					<div data-name="list" data-value={list.id} data-list={list.id}>
 						<p data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</p>
 						<p data-name="id" data-value={list.id} data-list_id={list.id}>{list.id}</p>
@@ -514,7 +370,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 						 </label>
 						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}">DELETE</button>
 
-						<button name="updateListFormButton" onclick={() => { updateListModalState.value = true;populateListModal(Number(list?.id)) as undefined; }}>Edit List</button>
+						<button name="updateListFormButton" onclick={async () => { updateListModalState.value = true; await populateListModal(Number(list?.id)) as undefined; }}>Edit List</button>
 
 						<div class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}>
 							<h3>Array?:{Array.isArray(list?.items)}</h3>
@@ -541,40 +397,29 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 
 		<!-- see https://svelte.dev/tutorial/kit/other-handlers -->
 		<dialog id="createListModalDialog" bind:this={createListDialog} onclose={() => {(createListModal.value = false); console.log(createList)}}>
+
 			<form {...createList} id="createListForm" name="createListForm" enctype="multipart/form-data">
+
 				<h2>List Entry</h2>
+
 				<label>
 					<h2>Title</h2>
 					<input {...title.as("text")} name="title" data-field="title" type="text" />
 				</label>
+				
 				<label>
 					Editable
-					<input {...editable.as("checkbox")} name="editable" data-field="editable" type="checkbox" defaultChecked={createListMap.get('editable')} checked={createListMap.get('editable')} value={createListMap.get('editable')} />
+					<input {...editable.as("checkbox")} name="editable" data-field="editable" type="checkbox" defaultChecked={listMap.get('editable')} checked={listMap.get('editable')} value={listMap.get('editable')} />
 				</label>
-				<!-- <label>
-					Owner
-					<input {...owner.as("number")} />
-				</label> -->
-				<input {...owner.as("number")} name="owner" data-field="owner" data-value={createListMap.get('owner')} type="hidden" value={createListMap.get('owner')} />
-				<input {...createList.fields.id.as("number")} name="id" data-field="id" data-value={createListMap.get('id')} type="hidden" value={createListMap.get('id')} />
-				<!-- <p data-field="owner">Owner: {userId}</p> -->
-				<!-- <label>
-					Created
-					<input {...created.as("text")} />
-				</label> -->
-				<!-- <p data-field="created">Created: {(new Date().toISOString())}</p> -->
-				<input {...created.as("text")} name="created" data-field="created" type="hidden" value={createListMap.get('created')} />
-				<input {...modified.as("text")} name="modified" data-field="modified" type="hidden" value={createListMap.get('modified')} />
 
-				<!-- <label>
-					ID
-					<input {...id.as("number")} />
-				</label> -->
-				<!-- <p data-field="id">ID: {(new Date().toISOString())}</p>
-				<label>
-					DBID
-					<input {...dbid.as("text")} />
-				</label> -->
+				<input {...owner.as("number")} name="owner" data-field="owner" data-value={listMap.get('owner')} type="hidden" value={listMap.get('owner')} />
+
+				<input {...createList.fields.id.as("number")} name="id" data-field="id" data-value={listMap.get('id')} type="hidden" value={listMap.get('id')} />
+
+				<input {...created.as("text")} name="created" data-field="created" type="hidden" value={listMap.get('created')} />
+
+				<input {...modified.as("text")} name="modified" data-field="modified" type="hidden" value={listMap.get('modified')} />
+
 				<p>
 					Items
 					<label>
@@ -616,6 +461,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				</p>
 
 				<button type="reset">Clear</button>
+
 				<button
 					type="button"
 					onclick={() => {
@@ -623,90 +469,17 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 						createListModal.value = false;
 					}}>Cancel</button
 				>
+
 				<button
 					type="submit"
 					onclick={() => {
-						saveNewForm('createListForm');
+						updateFormValues(listMap, { name: 'createListForm', fields: [ 'created', 'id', 'modified', 'owner' ] });
 						createListDialog?.close();
 						createListModal.value = false;
 					}}>Save</button
 				>
 			</form>
 		</dialog>
-
-		<!-- <dialog id="updateListModalDialog"> -->
-		<!--
-		<dialog bind:this={updateListDialog} onclose={()=> (updateListModal.value=false)}>
-			<form {...updateList} id="updateListForm" enctype="multipart/form-data">
-
-				<label>
-					<h2>Title</h2>
-					<p>{updateList.fields.title.value()}</p>
-					<input id="updateListTitle" {...title.as('text')}/>
-				</label>
-				<label>
-					Editable
-					<input {...editable.as('checkbox')} />
-				</label>
-				<label>
-					Owner
-					<input {...owner.as('number')} />
-				</label>
-				<label>
-					Created
-					<input {...created.as('text')} />
-				</label>
-				<label>
-					ID
-					<input {...id.as('number')} />
-				</label>
-				<label>
-					DBID
-					<input {...dbid.as('text')} />
-				</label>
-				<p>Items
-					<label>
-						Created
-						<input {...items[0].created.as('text')} />
-					</label>
-					<label>
-						DBID
-						<input {...items[0].dbid.as('text')} />
-					</label>
-					<label>
-						Editable
-						<input {...items[0].editable.as('checkbox')} />
-					</label>
-					<label>
-						Flag
-						<input {...items[0].flag.as('number')} />
-					</label>
-					<label>
-						ID
-						<input {...items[0].id.as('number')} />
-					</label>
-					<label>
-						Priority
-						<input {...items[0].priority.as('number')} />
-					</label>
-					<label>
-						Sequence
-						<input {...items[0].sequence.as('number')} />
-					</label>
-					<label>
-						Status
-						<input {...items[0].status.as('number')} />
-					</label>
-					<label>
-						Description
-						<input {...items[0].text.as('text')} />
-					</label>
-				</p>
-				<button>Save</button>
-			</form>
-			<button commandfor="updateListModalDialog" command="request-close">Close</button>
-		</dialog>
-	-->
 	{/if}
 </main>
 

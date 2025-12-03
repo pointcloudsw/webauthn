@@ -34,20 +34,35 @@ export async function dbConnect(): Promise<MySQLXAccessor> {
     return adb.db;
 }
 
-export async function getListsByUser(user: string | number) : Promise<MySqlDoc[]> {
+export async function getListsByUser(owner: string | number, listId?: string | number) : Promise<MySqlDoc[]> {
     let lists : MySqlDoc[] = [];
+    let qry = `owner = :uid`;
+    let parms = Object.assign({}, { uid: owner });
+    
+    console.log('Getting lists by user and/or listId...');
 
-    if (user){
+    if ( listId ) {
+        qry += ` AND id = :lid`;
+        parms = Object.assign(parms, { lid: listId });
+    }
+
+    if (owner){
 
         if ( !adb.db?.isConnected() ) await dbConnect();
+
+        console.log(owner,listId);
+        console.log('Qry:');
+        console.log(qry);
+        console.log('Bind parms:');
+        console.log(parms);
 
         if ( adb.db )
             lists = await adb.db.find(
                 adb.cfg.schema ?? '',
                 adb.collection,
-                `owner = :uid`,
+                qry,
                 { 
-                    bind: { uid: user }, 
+                    bind: parms, 
                     sort: ["created desc"]
                 }
             );
@@ -57,7 +72,7 @@ export async function getListsByUser(user: string | number) : Promise<MySqlDoc[]
         else
             console.log('DATABASE NOT CONNECTED, LISTS:')
         console.log(lists)
-        console.log('User:', user)
+        console.log('User:', owner)
     }
     return lists;
 }
