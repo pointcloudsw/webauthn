@@ -7,6 +7,12 @@ import { logger } from '$lib/exports';
 import { navMap, projectauth } from "$lib/constants";
 
 export function load(event) {
+
+	// logger(`\n--------- ↓ /+page.server.ts (load) ↓ -----------\n`);
+	// console.log(`EVENT:`);
+	// console.log(event);
+	// logger(`\n--------- ↑ /+page.server.ts (load) ↑ -----------\n`);
+
 	
 	if ( event.locals?.user ){
 		

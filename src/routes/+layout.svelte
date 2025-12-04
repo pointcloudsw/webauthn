@@ -1,7 +1,13 @@
 <script lang="ts">
-	let { children, data } = $props();
-	const { navMap } = data;
-	const navKeys = navMap
+	// import { logger } from '$lib/exports';
+	import { page } from '$app/state';
+
+	let { children } = $props();
+	let { navMap } = page.data;
+	// const { navMap } = data;
+	// logger(`\n--------- ↓ +layout.svelte ↓ -----------\n`);
+	// logger(`\n--------- ↑ +layout.svelte ↑ -----------\n`);
+
 </script>
 
 <svelte:head>

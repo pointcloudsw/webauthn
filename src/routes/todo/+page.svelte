@@ -1,10 +1,19 @@
 <script lang="ts">
 	import { logger } from "$lib/logger";
 	import { createList, getLists, deleteList, listUpdate } from "./data.remote";
-	import type { BL, DT, ID, TXT } from '$lib/list/types'
+	import type { BL, DT, ID, TXT } from '$lib/list/types';
+	import { page } from '$app/state';
 
-	let { data } = $props();
-	let { userId, username } = data;
+	let userId = page.data.userId;
+
+	// logger(`\n--------- ↓ /todo/+page.svelte ↓ -----------\n`);
+	// console.log(`Page:`);
+	// console.log(page);
+	// console.log(`UserId:`);
+	// console.log(userId);
+	// console.log(`PageDataUserId:`);
+	// console.log(page.data.userId);
+	// logger(`\n--------- ↑ /todo/+page.svelte ↑ -----------\n`);
 
 	type formMapValue = boolean | number | string;
 	
@@ -69,10 +78,12 @@
 
 // TODO: find a better solution to populating the list edit modal, that still adheres to the page as data source principle
 async function populateListModal(listId:number){
-	// console.log(`\n\nPopulating List Modal\n\nButton Event Data with data from List #:${listId}\n`);
-	const localList = await getLists({userId, listId});
-	
-	console.log(localList[0]);
+
+	// const localList = await getLists({userId, listId});
+	const [ localList ] = await getLists({userId, listId});
+	const newListMap = new Map(Object.entries(localList))
+	console.log(localList);
+	console.log(newListMap);
 
 	/* TODO:
 		Query local IndexedDB to populate list update form

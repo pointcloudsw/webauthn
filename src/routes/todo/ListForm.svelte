@@ -1,8 +1,9 @@
 <script lang="ts">
 import { createList, getLists } from './data.remote';
+import { page } from '$app/state';
 
-let { showModal = $bindable(), data } = $props();
-let { listId, userId } = data;
+let { showModal = $bindable() } = $props();
+let userId = page.data.userId;
 
 createList.fields.created.set((new Date()).toString());
 createList.fields.editable.set(true);

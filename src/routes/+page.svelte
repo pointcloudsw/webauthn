@@ -1,8 +1,20 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { logger } from "$lib/logger";
 
-	let { data } = $props();
-	let { action, path, userid, username } = data;
+	// let { data } = $props();
+	// let { action, path, userid, username } = data;
+	let { action, path, userid, username } = page.data;
+
+	// logger(`\n--------- ↓ /+page.svelte ↓ -----------\n`);
+	// console.log(`DATA:`);
+	// console.log(data);
+	// console.log(`PAGE:`);
+	// console.log(page);
+	// console.log(`PAGE.DATA:`);
+	// console.log(page.data);
+	// logger(`\n--------- ↑ /+page.svelte ↑ -----------\n`);
+
 
 	logger(`\n----- / -----\nUSERNAME: ${username}, SESSIONUSERID: ${userid}`);
 
