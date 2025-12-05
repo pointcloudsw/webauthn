@@ -4,7 +4,6 @@
 	import type { BL, DT, ID, TXT } from '$lib/list/types';
 	import { page } from '$app/state';
 	import type { List } from "$lib/types/list";
-	import { keyof } from "valibot";
 	let userId : number | string = $derived(page.data.userId);
 
 	// logger(`\n--------- ↓ /todo/+page.svelte ↓ -----------\n`);
@@ -68,6 +67,8 @@
 	let listItems: HTMLElement | null;
 	let qS = "";
 	let idx = '';
+	// let selectedList : number | string = $state(-1);
+	let selectedList : number | string = $state(-1);
 
 	$effect(() => {
 		if (updateListModalState?.value === true) {
@@ -305,25 +306,28 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 			onclose={()=>{
 				if ( updateListModalState.value === true )
 					updateListModalState.value = false;
-				console.log('Closing dialog and completing submission')
+				console.log(`Closing dialog and completing submission for User ${userId}, List ${selectedList}`);
+				selectedList = -1;
 			}}
 			onsubmit={() => {updateListModalState.value = false;}}
 		>
 			<p>{btnEvtData?.title ?? "No Title Found"}</p>
-
+			{#each await getLists({userId, listId: selectedList}) as srcList }
+				
 			<form {...listUpdate} id="updateListForm" name="updateListForm">
+				<p>Would get lists for User: {userId}, List: {selectedList}</p>
 
 				<label for="title">Title:</label>
-
 				<input {...title.as('text')} id="title" name="title" type="text" value={btnEvtData?.title || '' } />				
 				
-				<p data-field="id">ID: {btnEvtData?.id || ""}</p>
+				<!-- <p data-field="id">ID: {btnEvtData?.id || ""}</p> -->
+				<p data-field="id">ID: {srcList?.id || ""}</p>
 
 				<p data-field="owner">Owner: {btnEvtData.owner}</p>
 
 				<p data-field="created">Created: {btnEvtData?.created || ""}</p>
 
-				<p data-field="modified">Modified: {btnEvtData?.modified || ""}</p>
+				<p data-field="modified">Modified: {srcList?.modified || ""}</p>
 
 				<label for="editable">Editable:
 					{#if ( btnEvtData?.editable === true ) }
@@ -369,8 +373,9 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 
 				<!-- <button onclick={ () => { updateFormValues( { name: 'updateListForm', fields: [ 'created', 'id', 'modified', 'owner' ] } ) } } >Save</button> -->
 				<button onclick={()=>{ restoreUpdateFormStaticValues('updateListForm')}}>Save</button>
-
 			</form>
+			{/each}
+
 		</dialog>
 		<form {...deleteList} name="deleteListForm" id="deleteListForm"></form>
 
@@ -394,7 +399,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 						 </label>
 						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}">DELETE</button>
 
-						<button name="updateListFormButton" onclick={async () => { updateListModalState.value = true; await populateListModal(Number(list?.id)) as undefined; }}>Edit List</button>
+						<button name="updateListFormButton" onclick={async () => { updateListModalState.value = true; selectedList = Number(list?.id); await populateListModal(selectedList) as undefined; }}>Edit List</button>
 
 						<div class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}>
 							<h3>Array?:{Array.isArray(list?.items)}</h3>
