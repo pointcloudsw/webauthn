@@ -3,8 +3,9 @@
 	import { createList, getLists, deleteList, listUpdate } from "./data.remote";
 	import type { BL, DT, ID, TXT } from '$lib/list/types';
 	import { page } from '$app/state';
-
-	let userId = page.data.userId;
+	import type { List } from "$lib/types/list";
+	import { keyof } from "valibot";
+	let userId : number | string = $derived(page.data.userId);
 
 	// logger(`\n--------- ↓ /todo/+page.svelte ↓ -----------\n`);
 	// console.log(`Page:`);
@@ -79,9 +80,12 @@
 // TODO: find a better solution to populating the list edit modal, that still adheres to the page as data source principle
 async function populateListModal(listId:number){
 
+
+	// TODO:  create keyed indexes for localList and btnEventData types to allow indexing by string
+
 	// const localList = await getLists({userId, listId});
 	const [ localList ] = await getLists({userId, listId});
-	const newListMap = new Map(Object.entries(localList))
+	const newListMap = new Map(Object.entries(localList));
 	console.log(localList);
 	console.log(newListMap);
 
@@ -133,9 +137,18 @@ async function populateListModal(listId:number){
 		list = document?.querySelector(qS);
 
 		if (list) {
-			btnEvtData.created = list?.querySelector(`[data-list_created]`)?.textContent;
+			// btnEvtData.created = list?.querySelector(`[data-list_created]`)?.textContent;
+			// btnEvtData.created = newListMap.get('created') as string;
+			btnEvtData.created = localList.created;
 
-			btnEvtData.modified = list?.querySelector(`[data-list_modified]`)?.textContent;
+			// btnEvtData.modified = list?.querySelector(`[data-list_modified]`)?.textContent;
+			btnEvtData.modified = localList.modified;
+
+
+
+			// [ 'created', 'modified' ].forEach( (f:string|undefined) => { if ( btnEvtData && f as keyof EventDataSet ) btnEvtData[f as keyof EventDataSet] = localList[f as keyof List] });
+			// Object.entries(localList as List).forEach( ( [ k, v ] ) => { if (btnEvtData[ k as keyof EventDataSet] && v) btnEvtData[ k as keyof EventDataSet] = localList[ k as keyof List ] } );
+			Object.keys(localList as List).forEach( k => { if (k && btnEvtData[ k as keyof EventDataSet ]) {console.log( k, typeof k, btnEvtData[ k as keyof EventDataSet ], typeof btnEvtData[ k as keyof EventDataSet ], Object.hasOwn(btnEvtData,k)); } });
 
 			btnEvtData.owner = Number(list?.querySelector(`[data-list_owner]`)?.textContent);
 

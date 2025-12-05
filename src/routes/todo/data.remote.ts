@@ -1,7 +1,7 @@
 import { json, text, redirect, type RemoteQueryFunction, type RemoteForm } from '@sveltejs/kit';
 
 import * as v from 'valibot';
-import { List, ListKey, type Item } from '$lib/types/list';
+import { type List, ListKey, type Item } from '$lib/types/list';
 import { form, query } from "$app/server";
 import { addList, delList,getListsByUser, getListByListId,editList } from '$lib/server/database/db';
 

@@ -1,6 +1,7 @@
 import * as v from 'valibot';
 
-export const Item = v.object({
+// export const Item = v.object({
+export const ItemSchema = v.object({
     created: v.optional(v.date(), (()=>new Date())),
     modified: v.optional(v.date()),
     dbid: v.optional(v.string()),
@@ -14,9 +15,15 @@ export const Item = v.object({
     text: v.optional(v.string())
 });
 
-export type Item = v.InferOutput<typeof Item>;
+// type Item = v.InferOutput<typeof Item>;
+// type Item = v.InferOutput<typeof ItemSchema>;
+// type ItemType = v.InferOutput<typeof ItemSchema>;
+// export interface Item { Item };
+// export interface Item { ItemType };
+export type Item = v.InferOutput<typeof ItemSchema>;
 
-export const List = v.object({
+// export const List = v.object({
+export const ListSchema = v.object({
     created: v.optional(v.string()),
     modified: v.optional(v.string()),
     dbid: v.optional(v.string()),
@@ -28,7 +35,12 @@ export const List = v.object({
     title: v.optional(v.string())
 });
 
-export type List = v.InferOutput<typeof List>;
+// type List = v.InferOutput<typeof List>;
+// type List = v.InferOutput<typeof ListSchema>;
+// type ListType = v.InferOutput<typeof ListSchema>;
+// export interface List { List };
+// export interface List { ListType };
+export type List = v.InferOutput<typeof ListSchema>;
 
 /*
 const MinNumberSchema = v.pipe(v.number(), v.toMinValue(10));

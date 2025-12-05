@@ -1,24 +1,29 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { logger } from "$lib/logger";
 
-	// let { data } = $props();
-	// let { action, path, userid, username } = data;
-	let { action, path, userid, username } = page.data;
+	let daction : string = $derived(page.data.action);
+	let dpath : string = $derived(page.data.path);
+	let dusername : string = $derived(page.data.username);
+	let action : string = page.data.action;
+	let path : string = page.data.path;
+	let username : string = page.data.username;
+  console.log(`---- ↓ /+page.svelte (PAGE DATA) ↓ -----`);
+  console.log(`NOT derived...`);
+  console.log(`Action:`);
+  console.log(action);
+  console.log(`Path:`);
+  console.log(path);
+  console.log(`Username:`);
+  console.log(username);
+  console.log(`DERIVED...`);
+  console.log(`Action:`);
+  console.log(daction);
+  console.log(`Path:`);
+  console.log(dpath);
+  console.log(`Username:`);
+  console.log(dusername);
+  console.log(`---- ↑ /+page.svelte (PAGE DATA) ↑ -----`);
 
-	// logger(`\n--------- ↓ /+page.svelte ↓ -----------\n`);
-	// console.log(`DATA:`);
-	// console.log(data);
-	// console.log(`PAGE:`);
-	// console.log(page);
-	// console.log(`PAGE.DATA:`);
-	// console.log(page.data);
-	// logger(`\n--------- ↑ /+page.svelte ↑ -----------\n`);
-
-
-	logger(`\n----- / -----\nUSERNAME: ${username}, SESSIONUSERID: ${userid}`);
-
-	let wmsg = action === 'Logout' ? `Welcome aboard, ${username}!` : `Welcome, please login to continue`;
 </script>
 <!-- <header>
 	<a href="/">Home</a>
@@ -28,7 +33,7 @@
 </header> -->
 
 <main>
-	<h1>{wmsg}</h1>
+	<h1>{action === 'Logout' ? `Welcome aboard, ${username}!` : `Welcome, please login to continue`}</h1>
 	<form method="post" action={path}>
 		<button class="btn">{action}</button>
 	</form>

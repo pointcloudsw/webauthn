@@ -1,9 +1,10 @@
 <script lang="ts">
 	// import { logger } from '$lib/exports';
+	
 	import { page } from '$app/state';
+	let { navMap } = page.data;
 
 	let { children } = $props();
-	let { navMap } = page.data;
 	// const { navMap } = data;
 	// logger(`\n--------- ↓ +layout.svelte ↓ -----------\n`);
 	// logger(`\n--------- ↑ +layout.svelte ↑ -----------\n`);
