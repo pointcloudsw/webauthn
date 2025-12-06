@@ -69,6 +69,7 @@
 	let idx = '';
 	// let selectedList : number | string = $state(-1);
 	let selectedList : number | string = $state(-1);
+	let localList:List = $state({ editable: true });
 
 	$effect(() => {
 		if (updateListModalState?.value === true) {
@@ -83,9 +84,10 @@ async function populateListModal(listId:number){
 
 
 	// TODO:  create keyed indexes for localList and btnEventData types to allow indexing by string
-
+	localList = { editable: false };
 	// const localList = await getLists({userId, listId});
-	const [ localList ] = await getLists({userId, listId});
+	// const [ localList ] = await getLists({userId, listId});
+	[ localList ] = await getLists({userId, listId});
 	const newListMap = new Map(Object.entries(localList));
 	console.log(localList);
 	console.log(newListMap);
@@ -312,6 +314,8 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 			onsubmit={() => {updateListModalState.value = false;}}
 		>
 			<p>{btnEvtData?.title ?? "No Title Found"}</p>
+
+			<!-- TODO: move await getLists() inside the form element -->
 			{#each await getLists({userId, listId: selectedList}) as srcList }
 				
 			<form {...listUpdate} id="updateListForm" name="updateListForm">
@@ -325,7 +329,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 
 				<p data-field="owner">Owner: {btnEvtData.owner}</p>
 
-				<p data-field="created">Created: {btnEvtData?.created || ""}</p>
+				<p data-field="created">Created: {localList?.created || ""}</p>
 
 				<p data-field="modified">Modified: {srcList?.modified || ""}</p>
 
@@ -399,7 +403,10 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 						 </label>
 						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}">DELETE</button>
 
-						<button name="updateListFormButton" onclick={async () => { updateListModalState.value = true; selectedList = Number(list?.id); await populateListModal(selectedList) as undefined; }}>Edit List</button>
+						<!-- <button name="updateListFormButton" onclick={async () => { updateListModalState.value = true; selectedList = Number(list?.id); await populateListModal(selectedList) as undefined; }}>Edit List</button> -->
+						<button name="updateListFormButton" onclick={async () => { let l = Number(list?.id);
+							[ localList ] = await getLists({userId, listId: l});
+							updateListModalState.value = true; selectedList = l; await populateListModal(selectedList) as undefined; }}>Edit List</button>
 
 						<div class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}>
 							<h3>Array?:{Array.isArray(list?.items)}</h3>
