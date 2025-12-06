@@ -289,9 +289,12 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 	*/
 
 	rmAndAppendReadonlyFormInputs(docForm,'modified',(new Date()).toISOString());
-	rmAndAppendReadonlyFormInputs(docForm,'id',btnEvtData.id as string);
-	rmAndAppendReadonlyFormInputs(docForm,'owner',btnEvtData.owner as string);
-	rmAndAppendReadonlyFormInputs(docForm,'created',btnEvtData.created as string ?? '');
+	// rmAndAppendReadonlyFormInputs(docForm,'id',btnEvtData.id as string);
+	// rmAndAppendReadonlyFormInputs(docForm,'owner',btnEvtData.owner as string);
+	// rmAndAppendReadonlyFormInputs(docForm,'created',btnEvtData.created as string ?? '');
+	rmAndAppendReadonlyFormInputs(docForm,'id',localList.id as string);
+	rmAndAppendReadonlyFormInputs(docForm,'owner',localList.owner as string);
+	rmAndAppendReadonlyFormInputs(docForm,'created',localList.created as string ?? '');
 
 }
 
@@ -313,28 +316,31 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 			}}
 			onsubmit={() => {updateListModalState.value = false;}}
 		>
-			<p>{btnEvtData?.title ?? "No Title Found"}</p>
+			<!-- <p>{btnEvtData?.title ?? "No Title Found"}</p> -->
+			<p>{localList?.title ?? "No Title Found"}</p>
 
 			<!-- TODO: move await getLists() inside the form element -->
-			{#each await getLists({userId, listId: selectedList}) as srcList }
+			<!-- {#each await getLists({userId, listId: selectedList}) as srcList } -->
 				
 			<form {...listUpdate} id="updateListForm" name="updateListForm">
 				<p>Would get lists for User: {userId}, List: {selectedList}</p>
 
 				<label for="title">Title:</label>
-				<input {...title.as('text')} id="title" name="title" type="text" value={btnEvtData?.title || '' } />				
+				<!-- <input {...title.as('text')} id="title" name="title" type="text" value={btnEvtData?.title || '' } />				 -->
+				<input {...title.as('text')} id="title" name="title" type="text" value={localList?.title || '' } />				
 				
 				<!-- <p data-field="id">ID: {btnEvtData?.id || ""}</p> -->
-				<p data-field="id">ID: {srcList?.id || ""}</p>
+				<!-- <p data-field="id">ID: {srcList?.id || ""}</p> -->
+				<p data-field="id">ID: {localList?.id || ""}</p>
 
-				<p data-field="owner">Owner: {btnEvtData.owner}</p>
+				<p data-field="owner">Owner: {localList.owner}</p>
 
 				<p data-field="created">Created: {localList?.created || ""}</p>
 
-				<p data-field="modified">Modified: {srcList?.modified || ""}</p>
+				<p data-field="modified">Modified: {localList?.modified || ""}</p>
 
 				<label for="editable">Editable:
-					{#if ( btnEvtData?.editable === true ) }
+					{#if ( localList?.editable === true ) }
 						<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={true} defaultChecked={true} checked={true} />
 					{:else}
 						<input {...editable.as('checkbox')} name="editable" id="editable" type="checkbox" value={false} defaultChecked={false} checked={false} />
@@ -343,11 +349,11 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 
 				<section>
 
-					<p data-field="items">{btnEvtData?.items || ""}</p>
+					<p data-field="items">{localList?.items || ""}</p>
 
-					{#if btnEvtData?.items }						
-						<h3>Items: {btnEvtData.items.length}</h3>
-						{#each btnEvtData?.items as i, iidx}
+					{#if localList?.items }						
+						<h3>Items: {localList.items.length}</h3>
+						{#each localList?.items as i, iidx}
 								<label for="id_{i?.id}">ID: {i?.id}</label>
 
 								<input {...items[iidx].id.as('number')} id="id_{i?.id}" name="id_{i?.id}" type="hidden" value={i?.id} />
@@ -378,7 +384,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<!-- <button onclick={ () => { updateFormValues( { name: 'updateListForm', fields: [ 'created', 'id', 'modified', 'owner' ] } ) } } >Save</button> -->
 				<button onclick={()=>{ restoreUpdateFormStaticValues('updateListForm')}}>Save</button>
 			</form>
-			{/each}
+			<!-- {/each} -->
 
 		</dialog>
 		<form {...deleteList} name="deleteListForm" id="deleteListForm"></form>
@@ -394,19 +400,18 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 						<p data-name="created" data-value={list.created} data-list_created={list.created}>{list.created}</p>
 						<p data-name="modified" data-value={list.modified} data-list_modified={list.modified}>{list.modified}</p>
 						<p data-name="owner" data-value={list.owner} data-list_owner={list.owner}>{list.owner}</p>
-						<label data-name="editable" data-value={list.editable} data-list_editable={list.editable}>Editable:
-							{#if ( list?.editable ) }
+						<label data-name="editable" data-value={list.editable} data-list_editable={list.editable} aria-label="Lock list">{#if ( list?.editable ) }
 								<input type='checkbox' defaultChecked={true} value={true} checked={true} />
 							{:else}
 								<input type='checkbox' defaultChecked={false} value={false} checked={false} />
 							{/if}
 						 </label>
-						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}">DELETE</button>
+						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}" aria-label="Delete list"></button>
 
 						<!-- <button name="updateListFormButton" onclick={async () => { updateListModalState.value = true; selectedList = Number(list?.id); await populateListModal(selectedList) as undefined; }}>Edit List</button> -->
 						<button name="updateListFormButton" onclick={async () => { let l = Number(list?.id);
 							[ localList ] = await getLists({userId, listId: l});
-							updateListModalState.value = true; selectedList = l; await populateListModal(selectedList) as undefined; }}>Edit List</button>
+							updateListModalState.value = true; selectedList = l; await populateListModal(selectedList) as undefined; }} aria-label="Update list"></button>
 
 						<div class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}>
 							<h3>Array?:{Array.isArray(list?.items)}</h3>
@@ -524,7 +529,74 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 	display: grid;
 	grid: auto / 1fr;
 } */
+button[name='deleteListFormButton'] {
+	/* border: 2px solid blue; */
+	border: none;
+	/* background: url(./remove.svg) no-repeat 70% 70%; */
+	background: url(./remove.svg) no-repeat;
+	/* background-size: 1rem 1rem; */
+	cursor: pointer;
+	/* height: 100%; */
+	aspect-ratio: 1;
+	scale: 0.8;
+	opacity: 0.5;
+	transition: opacity 0.2s;
+	padding: 0.5rem 1rem 0.5rem;
+}
+	button[name='deleteListFormButton']:hover {
+		opacity: 1;
+	}
+button[name='updateListFormButton'] {
+	/* border: 2px solid blue; */
+	border: none;
+	/* background: url(./remove.svg) no-repeat 70% 70%; */
+	/* background: url(./remove.svg) no-repeat; */
+	/* background-size: 1rem 1rem; */
+	cursor: pointer;
+	/* height: 100%; */
+	aspect-ratio: 1;
+	scale: 1.2;
+	opacity: 0.5;
+	rotate: 125deg;
+	background: transparent;
+	transition: opacity 0.2s;
 
+}
+
+	button[name='updateListFormButton']:hover {
+		opacity: 1;
+	}
+	button[name='updateListFormButton']::after {
+		content: '\270f';
+	}
+
+
+label[data-name='editable'] {
+	/* border: 2px solid blue; */
+	border: none;
+	/* background: url(./remove.svg) no-repeat 70% 70%; */
+	/* background: url(./remove.svg) no-repeat; */
+	/* background-size: 1rem 1rem; */
+	cursor: pointer;
+	/* height: 100%; */
+	aspect-ratio: 1;
+	scale: 1.2;
+	opacity: 0.5;
+	rotate: 125deg;
+	background: transparent;
+	transition: opacity 0.2s;
+
+}
+
+	label[data-name='editable']:hover {
+		opacity: 1;
+	}
+	label[data-name='editable']::before {
+		content: '\1f512';
+	}	
+	label[data-name='editable']::after {
+		content: '\1f513';
+	}	
 	dialog {
 		inline-size: 85%;
 		block-size: 85%;

@@ -15,13 +15,13 @@
   console.log(path);
   console.log(`Username:`);
   console.log(username);
-  console.log(`DERIVED...`);
-  console.log(`Action:`);
-  console.log(daction);
-  console.log(`Path:`);
-  console.log(dpath);
-  console.log(`Username:`);
-  console.log(dusername);
+  // console.log(`DERIVED...`);
+  // console.log(`Action:`);
+  // console.log(daction);
+  // console.log(`Path:`);
+  // console.log(dpath);
+  // console.log(`Username:`);
+  // console.log(dusername);
   console.log(`---- ↑ /+page.svelte (PAGE DATA) ↑ -----`);
 
 </script>
