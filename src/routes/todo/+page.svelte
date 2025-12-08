@@ -4,6 +4,7 @@
 	import type { BL, DT, ID, TXT } from '$lib/list/types';
 	import { page } from '$app/state';
 	import type { List } from "$lib/types/list";
+	import ListEntry from "$lib/components/ListEntry.svelte";
 	let userId : number | string = $derived(page.data.userId);
 
 	// logger(`\n--------- ↓ /todo/+page.svelte ↓ -----------\n`);
@@ -292,8 +293,8 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 	// rmAndAppendReadonlyFormInputs(docForm,'id',btnEvtData.id as string);
 	// rmAndAppendReadonlyFormInputs(docForm,'owner',btnEvtData.owner as string);
 	// rmAndAppendReadonlyFormInputs(docForm,'created',btnEvtData.created as string ?? '');
-	rmAndAppendReadonlyFormInputs(docForm,'id',localList.id as string);
-	rmAndAppendReadonlyFormInputs(docForm,'owner',localList.owner as string);
+	rmAndAppendReadonlyFormInputs(docForm,'id',localList.id as unknown as string);
+	rmAndAppendReadonlyFormInputs(docForm,'owner',localList.owner as unknown as string);
 	rmAndAppendReadonlyFormInputs(docForm,'created',localList.created as string ?? '');
 
 }
@@ -394,12 +395,13 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 
 			<div class="todo-list">
 				{#each await getLists({userId}) as list (list)}
-					<div data-name="list" data-value={list.id} data-list={list.id}>
-						<p data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</p>
+				<div data-name="list" data-value={list.id} data-list={list.id}>
+						<ListEntry data={list} />
+						<!-- <p data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</p>
 						<p data-name="id" data-value={list.id} data-list_id={list.id}>{list.id}</p>
 						<p data-name="created" data-value={list.created} data-list_created={list.created}>{list.created}</p>
 						<p data-name="modified" data-value={list.modified} data-list_modified={list.modified}>{list.modified}</p>
-						<p data-name="owner" data-value={list.owner} data-list_owner={list.owner}>{list.owner}</p>
+						<p data-name="owner" data-value={list.owner} data-list_owner={list.owner}>{list.owner}</p> -->
 						<label data-name="editable" data-value={list.editable} data-list_editable={list.editable} aria-label="Lock list">{#if ( list?.editable ) }
 								<input type='checkbox' defaultChecked={true} value={true} checked={true} />
 							{:else}
@@ -413,7 +415,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 							[ localList ] = await getLists({userId, listId: l});
 							updateListModalState.value = true; selectedList = l; await populateListModal(selectedList) as undefined; }} aria-label="Update list"></button>
 
-						<div class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}>
+						<!-- <div class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}>
 							<h3>Array?:{Array.isArray(list?.items)}</h3>
 							<h5>Type?:{typeof list?.items}</h5>
 							<h5>Values?:{JSON.stringify(list?.items)}</h5>
@@ -426,7 +428,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 									<p data-name="editable" data-value={item.editable} data-list-item_editable={item.editable}>Item is Editable: {item.editable}</p>
 								</div>
 							{/each}
-						</div>
+						</div> -->
 					</div>
 				{:else}
 					<p>no records found</p>
