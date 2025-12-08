@@ -80,6 +80,14 @@
 		}
 	});
 
+function printVars(lid = 1, items = []){
+	console.log(`List Map:`);
+	console.log(listMap);
+	console.log(`ListID:`);
+	console.log(lid);
+	console.log('Items');
+	console.log(items);
+}
 // TODO: find a better solution to populating the list edit modal, that still adheres to the page as data source principle
 async function populateListModal(listId:number){
 
@@ -396,7 +404,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 			<div class="todo-list">
 				{#each await getLists({userId}) as list (list)}
 					<div data-name="list" data-value={list.id} data-list={list.id}>
-						<ListEntry {list} />
+						<ListEntry {list} {printVars} />
 
 						<label data-name="editable" data-value={list.editable} data-list_editable={list.editable} aria-label="Lock list">{#if ( list?.editable ) }
 								<input type='checkbox' defaultChecked={true} value={true} checked={true} />
