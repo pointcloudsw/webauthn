@@ -396,7 +396,8 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 			<div class="todo-list">
 				{#each await getLists({userId}) as list (list)}
 				<div data-name="list" data-value={list.id} data-list={list.id}>
-						<ListEntry data={list} />
+						<!-- <ListEntry data={list} /> -->
+						<ListEntry {list} />
 						<!-- <p data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</p>
 						<p data-name="id" data-value={list.id} data-list_id={list.id}>{list.id}</p>
 						<p data-name="created" data-value={list.created} data-list_created={list.created}>{list.created}</p>
