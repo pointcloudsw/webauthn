@@ -97,7 +97,7 @@ Now every time someone runs `npm install`, your file override is automatically a
 
 If you're using webpack, you can alias specific files:
 
-```javascript
+```js
 // webpack.config.js
 module.exports = {
   resolve: {

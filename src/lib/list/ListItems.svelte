@@ -1,17 +1,16 @@
 <script lang="ts">
     let { list, printVars } = $props();
-    let deleteMe = document.querySelectorAll("dialog");
     
 </script>
 
-<div class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}>
+<!-- <div class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}> -->
+<details class="todo-items" data-name="items" data-value={`data-list-items_${list.id}`} data-list-items={`list-items_${list.id}`}>
+    <summary>
     <h3>Array?:{Array.isArray(list?.items)}</h3>
     <h5>Type?:{typeof list?.items}</h5>
     <h5>Values?:{JSON.stringify(list?.items)}</h5>
     <h5>PrintVars: {printVars(list?.id, list?.items)}</h5>
-    {#each deleteMe.entries() as entry}
-    <p>{entry}</p>
-    {/each}
+    </summary>
     {#each list?.items as item (item)}
         <div data-name="item" data-value={item.id} class="list-item" data-list-item={item.id}>
             <p data-name="id" data-value={item.id} data-list-item_id={item.id}>Item ID: {item.id}</p>
@@ -25,4 +24,10 @@
             <p>no items found</p>
         </div>
     {/each}
-</div>
+    </details>
+
+<style>
+    details {
+        border: 2px solid mediumslateblue;
+    }
+</style>

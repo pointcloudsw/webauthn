@@ -4,7 +4,8 @@
 	import type { BL, DT, ID, TXT } from '$lib/list/types';
 	import { page } from '$app/state';
 	import type { List } from "$lib/types/list";
-	import ListEntry from "$lib/components/ListEntry.svelte";
+	import ListEntry from "$lib/list/ListEntry.svelte";
+	import { setListContext } from "$lib/list/context";
 	let userId : number | string = $derived(page.data.userId);
 
 	// logger(`\n--------- ↓ /todo/+page.svelte ↓ -----------\n`);
@@ -100,6 +101,9 @@ async function populateListModal(listId:number){
 	const newListMap = new Map(Object.entries(localList));
 	console.log(localList);
 	console.log(newListMap);
+
+	// note: set context can only be used during component initialization, so if it is needed at all, then setListContext must be moved into a component
+	// setListContext(localList);
 
 	/* TODO:
 		Query local IndexedDB to populate list update form
@@ -415,9 +419,16 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}" aria-label="Delete list"></button>
 
 						<!-- <button name="updateListFormButton" onclick={async () => { updateListModalState.value = true; selectedList = Number(list?.id); await populateListModal(selectedList) as undefined; }}>Edit List</button> -->
-						<button name="updateListFormButton" onclick={async () => { let l = Number(list?.id);
-							[ localList ] = await getLists({userId, listId: l});
-							updateListModalState.value = true; selectedList = l; await populateListModal(selectedList) as undefined; }} aria-label="Update list"></button>
+						<button
+							name="updateListFormButton"
+							onclick={async () => {
+								let l = Number(list?.id);
+								[ localList ] = await getLists({userId, listId: l});
+								updateListModalState.value = true;
+								selectedList = l;
+								await populateListModal(selectedList) as undefined; }}
+							aria-label="Update list">
+						</button>
 					</div>
 				{:else}
 					<p>no records found</p>
