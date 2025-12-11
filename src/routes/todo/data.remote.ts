@@ -1,7 +1,7 @@
 import { json, text, redirect, type RemoteQueryFunction, type RemoteForm } from '@sveltejs/kit';
 
 import * as v from 'valibot';
-import { type List, ListKey, type Item } from '$lib/types/list';
+import { type List, type ListKey, type Item, ListSchema, ListKeySchema } from '$lib/types/list';
 import { form, query } from "$app/server";
 import { addList, delList,getListsByUser, getListByListId,editList } from '$lib/server/database/db';
 
@@ -11,16 +11,17 @@ import { logger } from '$lib/exports';
 
 
 
-export const getLists = query( v.object( { userId: v.union( [ v.number(), v.string() ] ), listId: v.optional( v.union([v.string(),v.number()]))} ), async qry => {
+// export const getLists = query( v.object( { userId: v.union( [ v.number(), v.string() ] ), listId: v.optional( v.union([v.string(),v.number()]))} ), async qry => {
+export const getLists = query( ListKeySchema, async qry => {
     console.log('Getting lists by user and/or listId...');
     console.log('qry:');
     console.log(qry);
 
-	let { userId, listId = '' } = qry;
+	// let { owner, _id = '' } = qry;
 
-	if ( !userId ) return [] as List[];
+	if ( !qry?.owner ) return [] as List[];
 
-	const lists = await getListsByUser(userId, listId) as unknown as List[];
+	const lists = await getListsByUser(qry as ListKey) as unknown as List[];
 	
 	return lists;
 });
@@ -36,28 +37,24 @@ const list = v.object({
 	owner: v.optional(v.union([v.string(),v.number()]), -1),
 	title: v.optional(v.string(), '')
 });
-// const listKey = v.object({ id: v.number(), owner: v.number()});
-/*
-export const getList = query( 'unchecked', async qryFltr => {
-	let [ listId, listOwner ] = qryFltr;
 
-	const lists = await getListByListId(listId, listOwner) as unknown as List[];
-	return lists;
-});
-*/
 
-export const createList=form(list, async data => {
+// export const createList=form(list, async data => {
+export const createList = form(ListSchema, async data => {
 	console.log('CREATE LIST DATA:');
 	console.log(data);
-	let { created, dbid, editable, id, items, modified, owner, title } = data;
-	id = Number(id);
-	owner = Number(owner);
-	const result = await addList({created, dbid, editable, id, modified, items, owner, title});
+	// let { created, editable, items, modified, owner, title } = data;
+	// _id = Number(_id);
+	// owner = Number(owner);
+		// TODO: add try-catch and validation of owner
+	// const result = await addList({created, editable, modified, items, owner, title});
+	const result = await addList(data as unknown as List);
 
 	logger(`Result: ${result.toString()}`);
 	if ( result ){
 		logger(`Refreshing...`);
-		await getLists({userId: owner as number}).refresh();
+		// TODO: add try-catch and validation of owner
+		await getLists(data).refresh();
 		logger(`Done.`);
 
 	}
@@ -65,25 +62,25 @@ export const createList=form(list, async data => {
 	}
 );
 
-// let listKey: ListKey;
-export const deleteList=form('unchecked', async data => {
-	// const listKey: ListKey = [ -1, -1 ];
+export const deleteList=form(ListKeySchema, async data => {
 	console.log(data);
 	if ( data ) {
 		let result;
-		let [ owner, id ] : ListKey = data.deleteListFormButton.toString().split(',').map(v => Number(v));
-	// let [ id, owner ] = data.delete.toString().split(',').map(e => Number(e));
-	// let i = data.get('id') as number;
-	// console.log(data.id.split(','));
-	logger(`DATA: ${data}, OWNER: ${owner}, LISTID: ${id}`);
+		
+		// let [ owner, _id ] : ListKey = data.deleteListFormButton.toString().split(',').map(v => Number(v));
+	
+		
+	logger(`DATA: ${data}, OWNER: ${data.owner}, LISTID: ${data._id}`);
 	// if ( id && owner )
 	try {
-		result = await delList({id, owner});
+		// result = await delList({_id, owner});
+		result = await delList(data as unknown as ListKey);
 
 	// logger(`Result: ${result.toString()}`);
 	if ( result ){
 		logger(`Refreshing...`);
-		await getLists({userId: owner}).refresh();
+		// await getLists({userId: owner}).refresh();
+		await getLists(data).refresh();
 		logger(`Done.`);
 
 	}
@@ -98,7 +95,7 @@ export const deleteList=form('unchecked', async data => {
 export const listUpdate=form('unchecked', async data => {
 	let result;
 	const list: List = { editable: false };
-	list.id = undefined;
+	list._id = undefined;
 	list.created = undefined;
 	list.modified = undefined;
 	list.owner = undefined;
@@ -124,7 +121,7 @@ export const listUpdate=form('unchecked', async data => {
 		console.log('EDITABLE:');
 		console.log(editable);
 
-		list.id = Number(id);
+		list._id = Number(id);
 		list.created = String(created);
 		list.modified = String(modified);
 		list.editable = Boolean(editable);

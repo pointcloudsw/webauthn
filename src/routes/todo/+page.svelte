@@ -22,7 +22,7 @@
 	type EventDataSetItem = {
 		id: ID | number | undefined; // system generated
 		created: DT | string | undefined; // system generated
-		modified: DT | string | undefined; // system generated
+		modified: number | string | undefined; // system generated
 		editable: BL | undefined; // client checkbox
 		text: TXT | undefined; // client textarea
 	};
@@ -30,8 +30,8 @@
 		id: ID | number | undefined; // system generated
 		title: TXT | undefined; // client input
 		owner: ID | number | undefined; // system generated
-		created: DT | string | undefined; // system generated
-		modified: DT | string | undefined; // system generated
+		created: number | string | undefined; // system generated
+		modified: number | string | undefined; // system generated
 		editable: BL | undefined; // client checkbox
 		items: EventDataSetItem[] | undefined; // client may add, remove, change or rearrange items
 	};
@@ -56,7 +56,7 @@
 
 	const listMap = new Map();
 
-	const { created, modified, dbid, editable, id, items, owner, title } = createList.fields;
+	const { created, modified, editable, _id, items, owner, title } = createList.fields;
 
 	const createListModal = $state({ value: false });
 	let createListDialog: HTMLDialogElement = $state() as HTMLDialogElement;
@@ -70,7 +70,7 @@
 	let qS = "";
 	let idx = '';
 	// let selectedList : number | string = $state(-1);
-	let selectedList : number | string = $state(-1);
+	let selectedList : string = $state('');
 	let localList:List = $state({ editable: true });
 
 	$effect(() => {
@@ -90,14 +90,14 @@ function printVars(lid = 1, items = []){
 	console.log(items);
 }
 // TODO: find a better solution to populating the list edit modal, that still adheres to the page as data source principle
-async function populateListModal(listId:number){
+async function populateListModal(listId:string){
 
 
 	// TODO:  create keyed indexes for localList and btnEventData types to allow indexing by string
 	localList = { editable: false };
 	// const localList = await getLists({userId, listId});
 	// const [ localList ] = await getLists({userId, listId});
-	[ localList ] = await getLists({userId, listId});
+	[ localList ] = await getLists({_id: listId, owner: userId});
 	const newListMap = new Map(Object.entries(localList));
 	console.log(localList);
 	console.log(newListMap);
@@ -146,7 +146,7 @@ async function populateListModal(listId:number){
 		evtDataSetItem.text = undefined;
 	}
 
-	if (listId > -1) {
+	if (listId) {
 		btnEvtData.id = Number((btnEvtData?.id && Number(btnEvtData?.id) > -1) ? btnEvtData?.id : listId);
 
 		qS = `[data-list='${btnEvtData.id}']`;
@@ -166,7 +166,7 @@ async function populateListModal(listId:number){
 			// Object.entries(localList as List).forEach( ( [ k, v ] ) => { if (btnEvtData[ k as keyof EventDataSet] && v) btnEvtData[ k as keyof EventDataSet] = localList[ k as keyof List ] } );
 			Object.keys(localList as List).forEach( k => { if (k && btnEvtData[ k as keyof EventDataSet ]) {console.log( k, typeof k, btnEvtData[ k as keyof EventDataSet ], typeof btnEvtData[ k as keyof EventDataSet ], Object.hasOwn(btnEvtData,k)); } });
 
-			btnEvtData.owner = Number(list?.querySelector(`[data-list_owner]`)?.textContent);
+			// btnEvtData.owner = Number(list?.querySelector(`[data-list_owner]`)?.textContent);
 
 			btnEvtData.title = list?.querySelector(`[data-list_title]`)?.textContent;
 
@@ -264,7 +264,7 @@ function setMapValues( destMap:Map<string, formMapValue>, kvPairs:{k:string,v:an
 }
 
 function createNewForm(docForm:string) : void {
-	// TODO:  Since user may have multiple concurrent sessions, will need to create next ID not on local list of lists, but on max value from remote database as system of record
+	// TODO:  Since user may have multiple concurrent sessions, will need to create next ID not on local list of lists, but on max value from remote database as system of record-- this step can be performed at the time the database is written to... as it's not necessary to generate and create the ID on the client side in realtime
 
 	logger(`Adding new docForm...`);
 
@@ -305,7 +305,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 	// rmAndAppendReadonlyFormInputs(docForm,'id',btnEvtData.id as string);
 	// rmAndAppendReadonlyFormInputs(docForm,'owner',btnEvtData.owner as string);
 	// rmAndAppendReadonlyFormInputs(docForm,'created',btnEvtData.created as string ?? '');
-	rmAndAppendReadonlyFormInputs(docForm,'id',localList.id as unknown as string);
+	rmAndAppendReadonlyFormInputs(docForm,'id',localList._id as unknown as string);
 	rmAndAppendReadonlyFormInputs(docForm,'owner',localList.owner as unknown as string);
 	rmAndAppendReadonlyFormInputs(docForm,'created',localList.created as string ?? '');
 
@@ -325,7 +325,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				if ( updateListModalState.value === true )
 					updateListModalState.value = false;
 				console.log(`Closing dialog and completing submission for User ${userId}, List ${selectedList}`);
-				selectedList = -1;
+				selectedList = '';
 			}}
 			onsubmit={() => {updateListModalState.value = false;}}
 		>
@@ -344,7 +344,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				
 				<!-- <p data-field="id">ID: {btnEvtData?.id || ""}</p> -->
 				<!-- <p data-field="id">ID: {srcList?.id || ""}</p> -->
-				<p data-field="id">ID: {localList?.id || ""}</p>
+				<p data-field="id">ID: {localList?._id || ""}</p>
 
 				<p data-field="owner">Owner: {localList.owner}</p>
 
@@ -406,8 +406,8 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 			<h1>Todo Lists</h1>
 
 			<div class="todo-list">
-				{#each await getLists({userId}) as list (list)}
-					<div data-name="list" data-value={list.id} data-list={list.id}>
+				{#each await getLists({owner: userId}) as list (list)}
+					<div data-name="list" data-value={list._id} data-list={list._id}>
 						<ListEntry {list} {printVars} />
 
 						<label data-name="editable" data-value={list.editable} data-list_editable={list.editable} aria-label="Lock list">{#if ( list?.editable ) }
@@ -416,14 +416,14 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 								<input type='checkbox' defaultChecked={false} value={false} checked={false} />
 							{/if}
 							</label>
-						<button name="deleteListFormButton" form="deleteListForm" type="submit" value="{userId},{list.id}" aria-label="Delete list"></button>
+						<button name="deleteListFormButton" form="deleteListForm" type="submit" value={`{ _id: ${list._id}, owner: ${userId}}`} aria-label="Delete list"></button>
 
 						<!-- <button name="updateListFormButton" onclick={async () => { updateListModalState.value = true; selectedList = Number(list?.id); await populateListModal(selectedList) as undefined; }}>Edit List</button> -->
 						<button
 							name="updateListFormButton"
 							onclick={async () => {
-								let l = Number(list?.id);
-								[ localList ] = await getLists({userId, listId: l});
+								let l : string = list?._id?.toString() ?? '';
+								[ localList ] = await getLists({owner: userId, _id: l});
 								updateListModalState.value = true;
 								selectedList = l;
 								await populateListModal(selectedList) as undefined; }}
@@ -455,8 +455,8 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				</label>
 
 				<input {...owner.as("number")} name="owner" data-field="owner" data-value={listMap.get('owner')} type="hidden" value={listMap.get('owner')} />
-
-				<input {...createList.fields.id.as("number")} name="id" data-field="id" data-value={listMap.get('id')} type="hidden" value={listMap.get('id')} />
+<!-- 
+				<input {...createList.fields.id.as("number")} name="id" data-field="id" data-value={listMap.get('id')} type="hidden" value={listMap.get('id')} /> -->
 
 				<input {...created.as("text")} name="created" data-field="created" type="hidden" value={listMap.get('created')} />
 
@@ -467,10 +467,6 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 					<label>
 						Created
 						<input {...items[0].created.as("text")} />
-					</label>
-					<label>
-						DBID
-						<input {...items[0].dbid.as("text")} />
 					</label>
 					<label>
 						Editable
@@ -515,7 +511,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<button
 					type="submit"
 					onclick={() => {
-						updateFormValues(listMap, { name: 'createListForm', fields: [ 'created', 'id', 'modified', 'owner' ] });
+						updateFormValues(listMap, { name: 'createListForm', fields: [ 'created', 'modified', 'owner' ] });
 						createListDialog?.close();
 						createListModal.value = false;
 					}}>Save</button

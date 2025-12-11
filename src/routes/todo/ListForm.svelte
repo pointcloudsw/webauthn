@@ -10,7 +10,7 @@ createList.fields.editable.set(true);
 createList.fields.owner.set(userId);
 console.log(createList.fields);
 
-const { created, dbid, editable, id, items, owner, title } = createList.fields;
+const { created, editable, _id, items, owner, title } = createList.fields;
 
 </script>
 
@@ -31,22 +31,14 @@ const { created, dbid, editable, id, items, owner, title } = createList.fields;
 					Created
 					<input {...created.as('text')} />
 				</label>
-				<label>
+				<!-- <label>
 					ID
 					<input {...id.as('number')} />
-				</label>
-				<label>
-					DBID
-					<input {...dbid.as('text')} />
-				</label>
+				</label> -->
 				<p>Items
 					<label>
 						Created
 						<input {...items[0].created.as('text')} />
-					</label>
-					<label>
-						DBID
-						<input {...items[0].dbid.as('text')} />
 					</label>
 					<label>
 						Editable

@@ -1,7 +1,7 @@
 import type { Collection } from "@mysql/xdevapi";
 import { type AppDb, MySQLXAccessor, type ConnectionConfig, type MySqlDoc } from "./MySQLXAccessor";
 import { env, loadEnvFile } from 'node:process';
-import { type List, type Item } from '$lib/types/list';
+import { type List, type Item, type ListKey } from '$lib/types/list';
 import { projectlib } from "$lib/constants";
 import type { int64 } from "@mysql/xdevapi/types/lib/Protocol/ScalarValues";
 import { logger } from "$lib/logger";
@@ -34,20 +34,22 @@ export async function dbConnect(): Promise<MySQLXAccessor> {
     return adb.db;
 }
 
-export async function getListsByUser(owner: string | number, listId?: string | number) : Promise<MySqlDoc[]> {
+export async function getListsByUser(data:ListKey) : Promise<MySqlDoc[]> {
     let lists : MySqlDoc[] = [];
     let qry = `owner = :uid`;
-    let parms = Object.assign({}, { uid: owner });
+    let parms = Object.assign({}, { uid: data.owner });
     
-    if ( listId ) {
-        qry += ` AND id = :lid`;
-        parms = Object.assign(parms, { lid: listId });
+    if ( data?._id ) {
+        // qry += ` AND id = :lid`;
+        qry += ` AND _id = :lid`;
+        parms = Object.assign(parms, { lid: data._id });
     }
 
-    if (owner){
-
+    if ( data?.owner ){
+        // TODO: add try-catch
         if ( !adb.db?.isConnected() ) await dbConnect();
 
+        // TODO: add try-catch
         if ( adb.db )
             lists = await adb.db.find(
                 adb.cfg.schema ?? '',
@@ -76,7 +78,7 @@ export async function getListByListId(listId: number, user: string | number) : P
         lists = await adb.db.find(
             adb.cfg.schema ?? '',
             adb.collection,
-            `owner = :uid AND id = :lid`, {
+            `owner = :uid AND _id = :lid`, {
                 bind: { 'uid': user, 'lid': listId }
             });
     else
@@ -120,22 +122,23 @@ export async function editList(list: List) : Promise<int64> {
     coll = await adb.db.getCollection(adb.cfg.schema ?? '',adb.collection);
     if (!coll)
         throw new Error("DB collection found");
-    logger(`Updating database...\n{ Schema:${adb.cfg.schema},\nCollection:${adb.collection},\nOwner: ${list.owner},\nListID: ${list.id}}`);
+    logger(`Updating database...\n{ Schema:${adb.cfg.schema},\nCollection:${adb.collection},\nOwner: ${list.owner},\nListID: ${list._id}}`);
     console.log(list);
     result = await adb.db.update(
         adb.cfg.schema ?? '',
         adb.collection,
         list,
-        `owner = :uid AND id = :lid`,
+        `owner = :uid AND _id = :lid`,
         {
-            bind: { 'uid': list.owner, 'lid': list.id }
+            bind: { 'uid': list.owner, 'lid': list._id }
         }
     );
     return result;
 }
 
 
-export async function delList(list: {id:number,owner:number}) : Promise<int64> {
+// export async function delList(list: {_id:number,owner:number}) : Promise<int64> {
+export async function delList(list: ListKey) : Promise<int64> {
     let result : int64;
     let coll : Collection;
 
@@ -150,9 +153,9 @@ export async function delList(list: {id:number,owner:number}) : Promise<int64> {
     result = await adb.db.delete(
         adb.cfg.schema ?? '',
         adb.collection,
-        `owner = :uid AND id = :lid`,
+        `owner = :uid AND _id = :lid`,
         {
-            bind: { 'uid': list.owner, 'lid': list.id }
+            bind: { 'uid': list.owner, 'lid': list._id }
         }
     );
     return result;

@@ -148,7 +148,7 @@ export class MySQLXAccessor {
     if (options?.sort) {
       query = query.sort(options.sort);
     }
-
+        // TODO: add try-catch
     const result = await query.execute();
     return result.fetchAll();
   }
