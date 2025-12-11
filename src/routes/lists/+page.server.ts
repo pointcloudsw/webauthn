@@ -10,7 +10,7 @@ export async function load(event) {
 	
 	const username : string = event.locals?.user?.username ?? '';
 	const userId : number = event.locals.session?.userId ?? -1;
-	const lists : MySqlDoc[] = await getListsByUser(userId);
+	const lists : MySqlDoc[] = await getListsByUser({owner: userId});
 
 	return { username, userId, lists };
 }

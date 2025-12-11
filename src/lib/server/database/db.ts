@@ -50,7 +50,9 @@ export async function getListsByUser(data:ListKey) : Promise<MySqlDoc[]> {
         if ( !adb.db?.isConnected() ) await dbConnect();
 
         // TODO: add try-catch
-        if ( adb.db )
+        if ( adb.db ){
+            logger('Executing query:');
+            console.log(qry);
             lists = await adb.db.find(
                 adb.cfg.schema ?? '',
                 adb.collection,
@@ -60,6 +62,10 @@ export async function getListsByUser(data:ListKey) : Promise<MySqlDoc[]> {
                     sort: ["created desc"]
                 }
             );
+            logger('Query executed.');
+            // console.log(lists);
+
+        }
     }
     return lists;
 }

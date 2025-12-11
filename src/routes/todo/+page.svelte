@@ -54,6 +54,7 @@
 		items: [ evtDataSetItem ]
 	});
 
+	const listEntryMap = new Map();
 	const listMap = new Map();
 
 	const { created, modified, editable, _id, items, owner, title } = createList.fields;
@@ -71,7 +72,7 @@
 	let idx = '';
 	// let selectedList : number | string = $state(-1);
 	let selectedList : string = $state('');
-	let localList:List = $state({ editable: true });
+	let localList:List = $derived({ owner: Number(userId), editable: false });
 
 	$effect(() => {
 		if (updateListModalState?.value === true) {
@@ -83,7 +84,7 @@
 
 function printVars(lid = 1, items = []){
 	console.log(`List Map:`);
-	console.log(listMap);
+	console.log(listEntryMap);
 	console.log(`ListID:`);
 	console.log(lid);
 	console.log('Items');
@@ -94,10 +95,10 @@ async function populateListModal(listId:string){
 
 
 	// TODO:  create keyed indexes for localList and btnEventData types to allow indexing by string
-	localList = { editable: false };
+	// localList = { editable: false, owner: userId };
 	// const localList = await getLists({userId, listId});
 	// const [ localList ] = await getLists({userId, listId});
-	[ localList ] = await getLists({_id: listId, owner: userId});
+	[ localList ] = await getLists({_id: listId, owner: Number(userId)});
 	const newListMap = new Map(Object.entries(localList));
 	console.log(localList);
 	console.log(newListMap);
@@ -247,7 +248,7 @@ function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: formMapValu
 
 // function saveNewForm(docForm:string) : void {
 
-// 	[ 'created', 'id', 'modified', 'owner' ].forEach( ( field:string ) => rmAndAppendReadonlyFormInputs( docForm,field,listMap.get(field) ) );
+// 	[ 'created', 'id', 'modified', 'owner' ].forEach( ( field:string ) => rmAndAppendReadonlyFormInputs( docForm,field,listEntryMap.get(field) ) );
 
 // }
 
@@ -263,22 +264,37 @@ function setMapValues( destMap:Map<string, formMapValue>, kvPairs:{k:string,v:an
 	} );
 }
 
-function createNewForm(docForm:string) : void {
+function populateFormMap(docForm:string, list?:any) : void {
 	// TODO:  Since user may have multiple concurrent sessions, will need to create next ID not on local list of lists, but on max value from remote database as system of record-- this step can be performed at the time the database is written to... as it's not necessary to generate and create the ID on the client side in realtime
 
-	logger(`Adding new docForm...`);
-
-	let dt = new Date().toISOString();
-
-	listMap.clear();
-
-	setMapValues(listMap, [
-		{ k: 'created', v: dt },
-		{ k: 'modified', v: dt },
-		{ k: 'id', v: Math.max( ...[ ...document.querySelectorAll("[data-name='list']") ].map( c => parseInt( c?.attributes?.getNamedItem('data-value')?.value as string ) ) ) + 1 },
-		{ k: 'owner', v: userId }
-	]);
-
+	switch ( docForm ) {
+		case 'createListForm':
+			let dt = new Date().toISOString();
+			listEntryMap.clear();
+			setMapValues(listEntryMap, [
+				{ k: 'created', v: dt },
+				{ k: 'modified', v: dt },
+				{ k: 'id', v: Math.max( ...[ ...document.querySelectorAll("[data-name='list']") ].map( c => parseInt( c?.attributes?.getNamedItem('data-value')?.value as string ) ) ) + 1 },
+				{ k: 'owner', v: Number(userId) }
+			]);
+			break;
+		case 'deleteListForm':
+			logger(`Populating DELETE FORM MAP...`);
+			console.log(list);
+			// listEntryMap.clear();
+			// setMapValues(listEntryMap, [
+			// 	{ k: '_id', v: Math.max( ...[ ...document.querySelectorAll("[data-name='list']") ].map( c => parseInt( c?.attributes?.getNamedItem('data-value')?.value as string ) ) ) + 1 },
+			// 	{ k: 'owner', v: Number(userId) }
+			// ]);
+			// logger(`Event data:`);
+			// console.log(event.target.attributes);
+			// console.log(event.target.attributes.getNamedItem('value').value);
+			break;
+		default:
+			break;
+	}
+	console.log(`LIST MAP`);
+	console.log(listEntryMap);
 	// listMap.set('created',dt);
 	// listMap.set('modified',dt);
 	// listMap.set('owner',userId);
@@ -314,7 +330,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 </script>
 
 <header>
-	<button id="newList" onclick={() => {createNewForm('createListForm'); createListModal.value = true}}>New List</button>
+	<button id="newList" onclick={() => {populateFormMap('createListForm'); createListModal.value = true}}>New List</button>
 </header>
 
 <main>
@@ -406,8 +422,9 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 			<h1>Todo Lists</h1>
 
 			<div class="todo-list">
-				{#each await getLists({owner: userId}) as list (list)}
+				{#each await getLists({owner: Number(userId)}) as list (list)}
 					<div data-name="list" data-value={list._id} data-list={list._id}>
+						{((l)=>{listMap.set(l._id, new Map(Object.entries(l)));})(list)}
 						<ListEntry {list} {printVars} />
 
 						<label data-name="editable" data-value={list.editable} data-list_editable={list.editable} aria-label="Lock list">{#if ( list?.editable ) }
@@ -416,14 +433,15 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 								<input type='checkbox' defaultChecked={false} value={false} checked={false} />
 							{/if}
 							</label>
-						<button name="deleteListFormButton" form="deleteListForm" type="submit" value={`{ _id: ${list._id}, owner: ${userId}}`} aria-label="Delete list"></button>
+						<!-- <button name="deleteListFormButton" form="deleteListForm" onclick={(e:any)=>populateFormMap('deleteListForm', listMap.get(list._id))} type="submit" value={`{ _id: ${list._id}, owner: ${Number(userId)}}`} aria-label="Delete list"></button> -->
+						<button name="deleteListFormButton" form="deleteListForm" onclick={()=>updateFormValues(listMap.get(list._id), {name: 'deleteListForm', fields: [ '_id', 'owner' ]})} type="submit" aria-label="Delete list"></button>
 
 						<!-- <button name="updateListFormButton" onclick={async () => { updateListModalState.value = true; selectedList = Number(list?.id); await populateListModal(selectedList) as undefined; }}>Edit List</button> -->
 						<button
 							name="updateListFormButton"
 							onclick={async () => {
 								let l : string = list?._id?.toString() ?? '';
-								[ localList ] = await getLists({owner: userId, _id: l});
+								[ localList ] = await getLists({owner: Number(userId), _id: l});
 								updateListModalState.value = true;
 								selectedList = l;
 								await populateListModal(selectedList) as undefined; }}
@@ -433,6 +451,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				{:else}
 					<p>no records found</p>
 				{/each}
+				{((l)=>{logger(`LIST MAP:`);console.log(l); console.log(`LIST MAP:`);})(listMap)}
 
 			</div>
 		</section>
@@ -451,16 +470,16 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				
 				<label>
 					Editable
-					<input {...editable.as("checkbox")} name="editable" data-field="editable" type="checkbox" defaultChecked={listMap.get('editable')} checked={listMap.get('editable')} value={listMap.get('editable')} />
+					<input {...editable.as("checkbox")} name="editable" data-field="editable" type="checkbox" defaultChecked={listEntryMap.get('editable')} checked={listEntryMap.get('editable')} value={listEntryMap.get('editable')} />
 				</label>
 
-				<input {...owner.as("number")} name="owner" data-field="owner" data-value={listMap.get('owner')} type="hidden" value={listMap.get('owner')} />
+				<input {...owner.as("number")} name="owner" data-field="owner" data-value={listEntryMap.get('owner')} type="hidden" value={listEntryMap.get('owner')} />
 <!-- 
-				<input {...createList.fields.id.as("number")} name="id" data-field="id" data-value={listMap.get('id')} type="hidden" value={listMap.get('id')} /> -->
+				<input {...createList.fields.id.as("number")} name="id" data-field="id" data-value={listEntryMap.get('id')} type="hidden" value={listEntryMap.get('id')} /> -->
 
-				<input {...created.as("text")} name="created" data-field="created" type="hidden" value={listMap.get('created')} />
+				<input {...created.as("text")} name="created" data-field="created" type="hidden" value={listEntryMap.get('created')} />
 
-				<input {...modified.as("text")} name="modified" data-field="modified" type="hidden" value={listMap.get('modified')} />
+				<input {...modified.as("text")} name="modified" data-field="modified" type="hidden" value={listEntryMap.get('modified')} />
 
 				<p>
 					Items
@@ -511,7 +530,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<button
 					type="submit"
 					onclick={() => {
-						updateFormValues(listMap, { name: 'createListForm', fields: [ 'created', 'modified', 'owner' ] });
+						updateFormValues(listEntryMap, { name: 'createListForm', fields: [ 'created', 'modified', 'owner' ] });
 						createListDialog?.close();
 						createListModal.value = false;
 					}}>Save</button

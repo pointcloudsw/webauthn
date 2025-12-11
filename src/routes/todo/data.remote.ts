@@ -19,9 +19,9 @@ export const getLists = query( ListKeySchema, async qry => {
 
 	// let { owner, _id = '' } = qry;
 
-	if ( !qry?.owner ) return [] as List[];
+	// if ( !qry?.owner ) return [] as List[];
 
-	const lists = await getListsByUser(qry as ListKey) as unknown as List[];
+	const lists = qry?.owner ? await getListsByUser(qry as ListKey) as unknown as List[] : [] as List[];
 	
 	return lists;
 });
@@ -43,9 +43,10 @@ const list = v.object({
 export const createList = form(ListSchema, async data => {
 	console.log('CREATE LIST DATA:');
 	console.log(data);
+	
 	// let { created, editable, items, modified, owner, title } = data;
 	// _id = Number(_id);
-	// owner = Number(owner);
+	data.owner = Number(data.owner);
 		// TODO: add try-catch and validation of owner
 	// const result = await addList({created, editable, modified, items, owner, title});
 	const result = await addList(data as unknown as List);
@@ -53,8 +54,7 @@ export const createList = form(ListSchema, async data => {
 	logger(`Result: ${result.toString()}`);
 	if ( result ){
 		logger(`Refreshing...`);
-		// TODO: add try-catch and validation of owner
-		await getLists(data).refresh();
+		await getLists({owner: data.owner}).refresh();
 		logger(`Done.`);
 
 	}
@@ -73,6 +73,8 @@ export const deleteList=form(ListKeySchema, async data => {
 	logger(`DATA: ${data}, OWNER: ${data.owner}, LISTID: ${data._id}`);
 	// if ( id && owner )
 	try {
+		data.owner = Number(data.owner);
+
 		// result = await delList({_id, owner});
 		result = await delList(data as unknown as ListKey);
 
@@ -80,7 +82,7 @@ export const deleteList=form(ListKeySchema, async data => {
 	if ( result ){
 		logger(`Refreshing...`);
 		// await getLists({userId: owner}).refresh();
-		await getLists(data).refresh();
+		await getLists({owner: data.owner}).refresh();
 		logger(`Done.`);
 
 	}
@@ -92,48 +94,43 @@ export const deleteList=form(ListKeySchema, async data => {
 );
 
 // experimental
-export const listUpdate=form('unchecked', async data => {
+export const listUpdate = form(ListSchema, async data => {
 	let result;
-	const list: List = { editable: false };
-	list._id = undefined;
-	list.created = undefined;
-	list.modified = undefined;
-	list.owner = undefined;
-	list.title = undefined;
-	// list.items = undefined;
-// const listKey: ListKey = [ -1, -1 ];
+	// const list: List = {
+	// 	editable: false
+	// list._id: '',
+	// list.created: '',
+	// list.modified: '',
+	// list.owner: -1,
+	// list.title: ''
+	// };
+
+	
 
 // TODO:  use context and/or cookie/session, database ID / listId and userID to validate and confirm that submitter is authorized to update the record 
 
 	logger('Data:');
 	console.log(data);
-	// if ( data.update ){
 	if ( data ){
 
 
-	// let [ id, owner ] = data.update.toString().split(',').map(e => Number(e));
-	// let i = data.get('id') as number;
-	// console.log(data.id.split(','));
-	logger(`DATA: ${data}, OWNER: ${data.owner}, LISTID: ${data.id}, EDITABLE: ${data.editable}`);
-	if ( data.id && data.owner )
-	try {	
-		let { id, created, modified, editable, owner, title } = data;
-		console.log('EDITABLE:');
-		console.log(editable);
 
-		list._id = Number(id);
-		list.created = String(created);
-		list.modified = String(modified);
-		list.editable = Boolean(editable);
-		list.owner = Number(owner);
-		list.title = String(title);
-		// list.items = items;
-		// result = await delList({id, owner});
-		// result = true;
-		// let info = data.update.toString().split(','); 
-		// logger(...info);
-		console.log(list);
-		result = await editList(list);
+	logger(`DATA: ${data}, OWNER: ${data.owner}, LISTID: ${data._id}, EDITABLE: ${data.editable}`);
+	if ( data._id && data.owner )
+	try {	
+		// let { id, created, modified, editable, owner, title } = data;
+		// console.log('EDITABLE:');
+		// console.log(editable);
+
+		// list._id = id
+		// list.created = String(created);
+		// list.modified = String(modified);
+		// list.editable = Boolean(editable);
+		// list.owner = Number(owner);
+		// list.title = String(title);
+
+		
+		result = await editList(data as List);
 	
 
 	// logger(`Result: ${result.toString()}`);

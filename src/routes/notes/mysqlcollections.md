@@ -10,7 +10,7 @@ collection.find(`(owner = :uid OR user = :uid) and title = :tit`).bind('uid', 1)
 
 To duplicate a document in a MySQL document collection using the X DevAPI Node.js connector, you need to **read the document first, then insert it with a new `_id`**. Here's how:
 
-```javascript
+```js
 const mysqlx = require('@mysql/xdevapi');
 
 async function duplicateDocument() {
@@ -63,7 +63,7 @@ duplicateDocument();
 
 ## Duplicating Multiple Documents:
 
-```javascript
+```js
 const results = await collection
   .find('someField = :value')
   .bind('value', 'targetValue')
@@ -98,4 +98,9 @@ for ( let d of docs ) { if ( ++i % 2 === 0 ) c.modify('_id = :id').set('editable
 c.find().fields('id').sort(['id desc']).limit(1).execute().fetchOne().id;
 
 c.find('owner = :own').fields('id').sort(['id desc']).limit(1).bind('own',1).execute().fetchOne().id;
+```
+
+## Basic update of a collection document property
+```js
+c.modify('_id = "0000692b0ecd000000000000001e"').set('owner', 1).execute();
 ```

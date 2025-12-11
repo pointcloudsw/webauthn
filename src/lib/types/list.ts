@@ -19,7 +19,7 @@ export const ListSchema = v.object({
     editable: v.optional(v.boolean(),true),
     _id: v.optional(v.string()),
     items: v.optional(v.array(ItemSchema)),
-    owner: v.optional(v.number(), -1),
+    owner: v.optional(v.union([v.string(),v.number()]), -1),
     title: v.optional(v.string())
 });
 
