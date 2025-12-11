@@ -55,7 +55,7 @@
 	});
 
 	const listEntryMap = new Map();
-	const listMap = new Map();
+	const listMap = new Map(); // should listMap be a $state() variable?
 
 	const { created, modified, editable, _id, items, owner, title } = createList.fields;
 
@@ -83,12 +83,12 @@
 	});
 
 function printVars(lid = 1, items = []){
-	console.log(`List Map:`);
-	console.log(listEntryMap);
-	console.log(`ListID:`);
-	console.log(lid);
-	console.log('Items');
-	console.log(items);
+	// console.log(`List Map:`);
+	// console.log(listEntryMap);
+	// console.log(`ListID:`);
+	// console.log(lid);
+	// console.log('Items');
+	// console.log(items);
 }
 // TODO: find a better solution to populating the list edit modal, that still adheres to the page as data source principle
 async function populateListModal(listId:string){
@@ -223,7 +223,7 @@ function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: formMapValu
 	logger(`Updating: ${docForm} ${el} with value ${val}...`);
 	let qSdel = `input[name='${el}']`;
 	let qSadd = `[data-field='${el}']`;
-	
+	let result;
 	// Remove all (hopefully none, but just in case) arbitrary form input fields added by client
 	document.forms[docForm as any].querySelectorAll(qSdel).forEach( e => e.remove() );
 
@@ -243,6 +243,10 @@ function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: formMapValu
 	else
 		document.forms[docForm as any].appendChild(newTag);	
 
+	result = insAfter ? insAfter.insertAdjacentElement('afterend',newTag) : document.forms[docForm as any].appendChild(newTag);	
+
+	if ( result instanceof DOMException || !result )
+		throw new Error(`Failed to populate DOM inputs`, {cause: result});
 	logger(`Form update complete.`);
 }
 
@@ -254,7 +258,7 @@ function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: formMapValu
 
 function updateFormValues( srcMap:Map<string, formMapValue>, form: { name:string, fields:string[] } ) : void {
 
-	form.fields.forEach( ( field:string ) => rmAndAppendReadonlyFormInputs( form.name, field, srcMap.get(field) ?? `Warning: '${field}' field not found` ) );
+	form.fields.forEach( ( field:string ) => { try { rmAndAppendReadonlyFormInputs( form.name, field, srcMap.get(field) ?? `Warning: '${field}' field not found` ) } catch(err){ throw new Error(`${err}`) } });
 
 }
 
@@ -434,7 +438,23 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 							{/if}
 							</label>
 						<!-- <button name="deleteListFormButton" form="deleteListForm" onclick={(e:any)=>populateFormMap('deleteListForm', listMap.get(list._id))} type="submit" value={`{ _id: ${list._id}, owner: ${Number(userId)}}`} aria-label="Delete list"></button> -->
-						<button name="deleteListFormButton" form="deleteListForm" onclick={()=>updateFormValues(listMap.get(list._id), {name: 'deleteListForm', fields: [ '_id', 'owner' ]})} type="submit" aria-label="Delete list"></button>
+						<button
+							name="deleteListFormButton"
+							form="deleteListForm"
+							onclick={
+								() => {
+									console.log(listMap);
+									try { updateFormValues(
+											listMap.get(list._id), {
+												name: 'deleteListForm',
+												fields: [ '_id', 'owner' ]
+											})
+									} catch(err){ throw new Error(`${err}`)}; listMap.delete(list._id);
+									console.log(listMap);
+								}}
+								type="submit"
+								aria-label="Delete list">
+						</button>
 
 						<!-- <button name="updateListFormButton" onclick={async () => { updateListModalState.value = true; selectedList = Number(list?.id); await populateListModal(selectedList) as undefined; }}>Edit List</button> -->
 						<button
