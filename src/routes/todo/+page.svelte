@@ -256,13 +256,13 @@ function rmAndAppendReadonlyFormInputs(docForm:string,el:string,val: formMapValu
 
 // }
 
-function updateFormValues( srcMap:Map<string, formMapValue>, form: { name:string, fields:string[] } ) : void {
+function updateFormValues( srcMap:Map<string, any>, form: { name:string, fields:string[] } ) : void {
 
 	form.fields.forEach( ( field:string ) => { try { rmAndAppendReadonlyFormInputs( form.name, field, srcMap.get(field) ?? `Warning: '${field}' field not found` ) } catch(err){ throw new Error(`${err}`) } });
 
 }
 
-function setMapValues( destMap:Map<string, formMapValue>, kvPairs:{k:string,v:any}[] ) : void {
+function setMapValues( destMap:Map<string, any>, kvPairs:{k:string,v:any}[] ) : void {
 	kvPairs.forEach( (kv:any) => {
 		destMap.set(kv.k, kv.v);
 	} );
@@ -334,7 +334,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 </script>
 
 <header>
-	<button id="newList" onclick={() => {populateFormMap('createListForm'); createListModal.value = true}}>New List</button>
+	<button id="newList" onclick={() => {/* populateFormMap('createListForm'); */ createListModal.value = true}}>New List</button>
 </header>
 
 <main>
@@ -429,7 +429,7 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				{#each await getLists({owner: Number(userId)}) as list (list)}
 					<div data-name="list" data-value={list._id} data-list={list._id}>
 						{((l)=>{listMap.set(l._id, new Map(Object.entries(l)));})(list)}
-						<ListEntry {list} {printVars} />
+						<ListEntry {list} />
 
 						<label data-name="editable" data-value={list.editable} data-list_editable={list.editable} aria-label="Lock list">{#if ( list?.editable ) }
 								<input type='checkbox' defaultChecked={true} value={true} checked={true} />
@@ -488,25 +488,29 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 					<input {...title.as("text")} name="title" data-field="title" type="text" />
 				</label>
 				
-				<label>
+				<!-- <label>
 					Editable
 					<input {...editable.as("checkbox")} name="editable" data-field="editable" type="checkbox" defaultChecked={listEntryMap.get('editable')} checked={listEntryMap.get('editable')} value={listEntryMap.get('editable')} />
+				</label> -->
+				<label>
+					Editable
+					<input {...editable.as("checkbox")} name="editable" data-field="editable" type="checkbox" />
 				</label>
 
-				<input {...owner.as("number")} name="owner" data-field="owner" data-value={listEntryMap.get('owner')} type="hidden" value={listEntryMap.get('owner')} />
+				<!-- <input {...owner.as("number")} name="owner" data-field="owner" data-value={listEntryMap.get('owner')} type="hidden" value={listEntryMap.get('owner')} /> -->
 <!-- 
 				<input {...createList.fields.id.as("number")} name="id" data-field="id" data-value={listEntryMap.get('id')} type="hidden" value={listEntryMap.get('id')} /> -->
 
-				<input {...created.as("text")} name="created" data-field="created" type="hidden" value={listEntryMap.get('created')} />
+				<!-- <input {...created.as("text")} name="created" data-field="created" type="hidden" value={listEntryMap.get('created')} />
 
-				<input {...modified.as("text")} name="modified" data-field="modified" type="hidden" value={listEntryMap.get('modified')} />
+				<input {...modified.as("text")} name="modified" data-field="modified" type="hidden" value={listEntryMap.get('modified')} /> -->
 
 				<p>
 					Items
-					<label>
+					<!-- <label>
 						Created
 						<input {...items[0].created.as("text")} />
-					</label>
+					</label> -->
 					<label>
 						Editable
 						<input {...items[0].editable.as("checkbox")} />
@@ -515,18 +519,18 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 						Flag
 						<input {...items[0].flag.as("number")} />
 					</label>
-					<label>
+					<!-- <label>
 						ID
 						<input {...items[0].id.as("number")} />
-					</label>
-					<label>
+					</label> -->
+					<!-- <label>
 						Priority
 						<input {...items[0].priority.as("number")} />
 					</label>
 					<label>
 						Sequence
 						<input {...items[0].sequence.as("number")} />
-					</label>
+					</label> -->
 					<label>
 						Status
 						<input {...items[0].status.as("number")} />
@@ -550,7 +554,26 @@ function restoreUpdateFormStaticValues(docForm:string) : void {
 				<button
 					type="submit"
 					onclick={() => {
-						updateFormValues(listEntryMap, { name: 'createListForm', fields: [ 'created', 'modified', 'owner' ] });
+						listEntryMap.clear();
+						setMapValues(listEntryMap, [
+							{
+								k: 'title',
+								v: document.forms['createListForm' as any].querySelector("input[name='title']")?.textContent
+							},
+							{
+								k: 'editable',
+								v: document.forms['createListForm' as any].querySelector("input[name='editable']")?.textContent
+							},
+							{
+								k: 'items',
+								v: document.forms['createListForm' as any].querySelector("input[name='items']")?.textContent
+							},
+							{
+								k: 'owner',
+								v: userId
+							}
+						]);
+						updateFormValues(listEntryMap, { name: 'createListForm', fields: [ 'owner', 'title', 'editable', 'items' ] });
 						createListDialog?.close();
 						createListModal.value = false;
 					}}>Save</button

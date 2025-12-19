@@ -47,6 +47,8 @@ export const createList = form(ListSchema, async data => {
 	// let { created, editable, items, modified, owner, title } = data;
 	// _id = Number(_id);
 	data.owner = Number(data.owner);
+	data.created = Number(new Date());
+
 		// TODO: add try-catch and validation of owner
 	// const result = await addList({created, editable, modified, items, owner, title});
 	const result = await addList(data as unknown as List);
