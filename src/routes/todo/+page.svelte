@@ -705,6 +705,8 @@ label[data-name='editable'] {
 		/* grid-auto-flow: row; */
 		border: 2px solid red;
 	}
+
+	
 	/* :global body:has(dialog:focus-within) *:not(dialog *, dialog, form, form *) { */
 	/* :global html:has(dialog:focus-within) * :not(dialog *, dialog, form, form *) {
 		background: black;

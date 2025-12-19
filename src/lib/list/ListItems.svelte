@@ -25,6 +25,19 @@
         background: #892eb760;
         margin: 0.25rem;
         padding: 0.01rem 1rem;
+    }
+    .list-item {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        inline-size: fit-content;
+        margin: 1rem auto;
+        padding: 0.5rem;
+    }
 
+    @media screen and (min-width: 960px) {
+        .list-item {
+            flex-direction: row;
+        }
     }
 </style>
