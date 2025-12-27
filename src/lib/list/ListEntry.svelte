@@ -6,13 +6,14 @@
 <details>
     <!-- <p data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</p> -->
     <!-- <summary data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</summary> -->
-    <summary data-name="title" data-value={list.title} data-list_title={list.title}><div><span>{list.title}</span><span>Put fancy buttons here</span></div></summary>
+    <summary data-name="title" data-value={list.title} data-list_title={list.title}><div><span>{list.title} - {list?.id} - {list?.owner} ({list?.items?.length ?? 0})</span><span>Put fancy buttons here</span></div></summary>
 
 <p data-name="id" data-value={list.id} data-list_id={list.id}>{list.id}</p>
 <p data-name="created" data-value={list.created} data-list_created={list.created}>{list.created}</p>
 <p data-name="modified" data-value={list.modified} data-list_modified={list.modified}>{list.modified}</p>
 <p data-name="owner" data-value={list.owner} data-list_owner={list.owner}>{list.owner}</p>
 
+<span>Items: {list?.items?.length}</span>
 <ListItems {list} />
 </details>
 
