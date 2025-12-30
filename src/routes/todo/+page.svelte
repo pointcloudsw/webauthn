@@ -703,7 +703,12 @@ label[data-name='editable'] {
 		display: grid;
 		/* grid: auto; */
 		/* grid-auto-flow: row; */
-		border: 2px solid red;
+		/* border: 1px dashed red; */
+		gap: 2rem;
+	}
+
+	div[data-name="list"] {
+		border: 2px solid yellow;
 	}
 
 	

@@ -33,11 +33,13 @@
 </div>
 {/if}
 <style>
-    details {
-        border: 2px solid slateblue;
-    }
+    /* details, div { */
+    /* details { */
+        /* border: 2px solid slateblue; */
+        /* border: 2px solid yellow; */
+    /* } */
 
-    summary  div {
+    :is(div,summary)  div {
         display: inline-flex;
         inline-size: 95%;
         place-content: space-between;

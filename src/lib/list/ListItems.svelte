@@ -18,9 +18,10 @@
     </div>
 
 <style>
-    div {
-        border: 2px solid mediumslateblue;
-    }
+    /* div { */
+        /* border: 2px solid mediumslateblue; */
+        /* border: 2px solid red; */
+    /* } */
     div > div {
         background: #892eb760;
         margin: 0.25rem;
