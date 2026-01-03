@@ -8,7 +8,7 @@
 <details>
     <!-- <p data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</p> -->
     <!-- <summary data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</summary> -->
-    <summary data-name="title" data-value={list.title} data-list_title={list.title}><div><span>{list.title} - {list?.id} - {list?.owner} ({list?.items?.length ?? 0})</span><span>Put fancy buttons here</span></div></summary>
+    <summary class="list-heading" data-name="title" data-value={list.title} data-list_title={list.title}><div><span>{list.title} - {list?.id} - {list?.owner} ({list?.items?.length ?? 0})</span><span>Put fancy buttons here</span></div></summary>
 
 <!-- <p data-name="id" data-value={list.id} data-list_id={list.id}>{list.id}</p>
 <p data-name="created" data-value={list.created} data-list_created={list.created}>{list.created}</p>
@@ -22,7 +22,7 @@
 <div>
     <!-- <p data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</p> -->
     <!-- <summary data-name="title" data-value={list.title} data-list_title={list.title}>{list.title}</summary> -->
-    <div data-name="title" data-value={list.title} data-list_title={list.title}><div><span>{list.title} - {list?.id} - {list?.owner} ({list?.items?.length ?? 0})</span><span>Put fancy buttons here</span></div></div>
+    <div class="list-heading" data-name="title" data-value={list.title} data-list_title={list.title}><div><span>{list.title} - {list?.id} - {list?.owner} ({list?.items?.length ?? 0})</span><span>Put fancy buttons here</span></div></div>
 
 <!-- <p data-name="id" data-value={list.id} data-list_id={list.id}>{list.id}</p>
 <p data-name="created" data-value={list.created} data-list_created={list.created}>{list.created}</p>
@@ -42,13 +42,19 @@
     :is(div,summary)  div {
         display: inline-flex;
         inline-size: 95%;
-        place-content: space-between;
+        justify-items: space-between;
         /* justify-self: end; */
         /* text-align-last: end; */
     }
     summary div :last-child {
         justify-self: end;
         color: red;
+    }
+    .list-heading > div {
+        display: inline-flex;
+        margin: auto;
+        place-items: space-between;
+        justify-content: space-between;
     }
     
 </style>
