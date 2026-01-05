@@ -38,23 +38,30 @@
         /* border: 2px solid slateblue; */
         /* border: 2px solid yellow; */
     /* } */
-
-    :is(div,summary)  div {
-        display: inline-flex;
-        inline-size: 95%;
-        /* justify-items: space-between; */
-        /* justify-self: end; */
-        /* text-align-last: end; */
-    }
     summary div :last-child {
         justify-self: end;
         color: red;
     }
+
+
+
     .list-heading > div {
         display: inline-flex;
         margin: auto;
-        /* place-items: space-between; */
         justify-content: space-between;
     }
-    
+
+    /* :is(div,summary)  div { */
+    summary div, div div {
+        display: inline-flex;
+        inline-size: 95%;
+        border: 1px solid orangered;
+    }
+    div div {
+        /* display: inline-flex; */
+        flex: 1;
+        margin-left: 1rem;
+    }
+
+
 </style>
