@@ -42,7 +42,7 @@
     :is(div,summary)  div {
         display: inline-flex;
         inline-size: 95%;
-        justify-items: space-between;
+        /* justify-items: space-between; */
         /* justify-self: end; */
         /* text-align-last: end; */
     }
@@ -53,7 +53,7 @@
     .list-heading > div {
         display: inline-flex;
         margin: auto;
-        place-items: space-between;
+        /* place-items: space-between; */
         justify-content: space-between;
     }
     
